@@ -1,6 +1,7 @@
 /** Hilfen für Engine-Tests: kleine kontrollierte Daten und kompakte Kampf-Steuerung. */
 import {
   ABILITIES,
+  CONDITIONS,
   FORMATS,
   ITEMS,
   MOVES,
@@ -95,7 +96,9 @@ export function makeDex(species: SpeciesData[] = [], moves: MoveData[] = []): De
         rules: { speciesClause: false, itemClause: false, noLegendary: false },
       },
     ],
+    conditions: CONDITIONS,
     typeChart: TYPE_CHART,
+    floatingTypes: ['gale'],
   });
 }
 
@@ -184,4 +187,17 @@ export function turnEvents(b: Battle, n: number): Battle['events'][number][] {
   if (start < 0) return [];
   const next = events.findIndex((e, i) => i > start && e.type === 'turn_start');
   return events.slice(start, next < 0 ? undefined : next);
+}
+
+/** Ein Einzelkampf (1 gegen 1) mit Test-Format. */
+export function singles(dex: Dex, a: MonsterSet[], b: MonsterSet[], seed = 'test'): Battle {
+  return battle(dex, [a, b], { format: 'test-singles', seed });
+}
+
+/** Mehrere Runden mit derselben Aktion pro Seite (Einzel). */
+export function repeat(b: Battle, turns: number, side0: ActionChoice, side1: ActionChoice): void {
+  for (let i = 0; i < turns && !b.ended; i++) {
+    if (b.getRequest(0).type !== 'move' || b.getRequest(1).type !== 'move') break;
+    turn(b, [side0], [side1]);
+  }
 }

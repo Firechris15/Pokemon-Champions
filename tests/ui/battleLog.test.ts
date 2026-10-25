@@ -4,7 +4,7 @@ import { runHeadlessBattle } from '../../src/ai/runner.ts';
 import { STANDARD_DEX } from '../../src/data/index.ts';
 import { de } from '../../src/i18n/de.ts';
 import { translate } from '../../src/i18n/translate.ts';
-import { formatEvent } from '../../src/ui/battleLog.ts';
+import { dexNames, formatEvent } from '../../src/ui/battleLog.ts';
 import type { LogContext } from '../../src/ui/battleLog.ts';
 
 function context(names: (side: 0 | 1, index: number) => string): LogContext {
@@ -12,9 +12,7 @@ function context(names: (side: 0 | 1, index: number) => string): LogContext {
     t: (key, params) => translate(de, key, params),
     monName: (mon) => names(mon.side, mon.index),
     sideName: (side) => (side === 0 ? 'Team A' : 'Team B'),
-    moveName: (id) => STANDARD_DEX.move(id).name,
-    effectName: (e) =>
-      e.kind === 'ability' ? STANDARD_DEX.ability(e.id).name : STANDARD_DEX.item(e.id).name,
+    ...dexNames(STANDARD_DEX),
   };
 }
 

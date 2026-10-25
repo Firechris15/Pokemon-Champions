@@ -25,6 +25,8 @@ export interface PositionRequest {
   struggle: boolean;
   /** Team-Indizes, zu denen gewechselt werden darf. */
   switchable: number[];
+  /** Kann gerade nicht auswechseln (Bindung, Wechselsperre, Aufladen). */
+  trapped: boolean;
 }
 
 export type Request =

@@ -7,7 +7,7 @@
   import type { Battle } from '../../engine/battle.ts';
   import type { SideIndex } from '../../engine/model.ts';
   import { t } from '../../i18n/i18n.svelte.ts';
-  import { formatEvent } from '../battleLog.ts';
+  import { dexNames, formatEvent } from '../battleLog.ts';
   import type { LogContext, LogLine } from '../battleLog.ts';
 
   interface Props {
@@ -85,11 +85,7 @@
       monName: (mon) =>
         t('engineTest.monLabel', { name: battle.mon(mon).name, team: team(mon.side) }),
       sideName: (side) => t(side === 0 ? 'engineTest.teamA' : 'engineTest.teamB'),
-      moveName: (id) => STANDARD_DEX.move(id).name,
-      effectName: (effect) =>
-        effect.kind === 'ability'
-          ? STANDARD_DEX.ability(effect.id).name
-          : STANDARD_DEX.item(effect.id).name,
+      ...dexNames(STANDARD_DEX),
     };
     return battle.events.flatMap((event) => formatEvent(event, context) ?? []);
   }

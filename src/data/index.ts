@@ -4,6 +4,7 @@
  */
 import { Dex } from '../engine/dex.ts';
 import { ABILITIES } from './abilities.ts';
+import { CONDITIONS } from './conditions.ts';
 import { FORMATS } from './formats.ts';
 import { ITEMS } from './items.ts';
 import { MOVES } from './moves.ts';
@@ -12,6 +13,7 @@ import { SPECIES } from './species.ts';
 import { TYPE_CHART } from './typechart.ts';
 
 export { ABILITIES } from './abilities.ts';
+export { CONDITIONS } from './conditions.ts';
 export { FORMATS } from './formats.ts';
 export { ITEMS } from './items.ts';
 export { MOVES } from './moves.ts';
@@ -27,5 +29,7 @@ export const STANDARD_DEX = new Dex({
   items: ITEMS,
   natures: NATURES,
   formats: FORMATS,
+  conditions: CONDITIONS,
   typeChart: TYPE_CHART,
+  floatingTypes: ['gale'],
 });

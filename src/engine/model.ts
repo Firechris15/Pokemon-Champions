@@ -13,6 +13,10 @@ export type BoostTable = Record<BoostId, number>;
 
 export type SideIndex = 0 | 1;
 
+/** Dauerhafte Statusprobleme: Brandmal, Starre, Toxin, Fäulnis, Schlummer, Frostbann. */
+export const STATUS_IDS = ['brn', 'par', 'psn', 'tox', 'slp', 'frz'] as const;
+export type StatusId = (typeof STATUS_IDS)[number];
+
 /** Ein Monster als Team-Eintrag (Ergebnis des Teambuilders bzw. Zufallsgenerators). */
 export interface MonsterSet {
   species: string;

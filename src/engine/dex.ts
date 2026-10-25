@@ -4,8 +4,9 @@
  * einen Dex übergeben (Standard: `src/data/index.ts`, in Tests auch eigene Mini-Daten).
  */
 import type { TypeChart } from '../data/typechart.ts';
-import type { EffectHooks } from './effects.ts';
-import type { BoostTable, StatId, StatTable, TypeId } from './model.ts';
+import type { BattleContext, EffectHooks } from './effects.ts';
+import type { BoostTable, StatId, StatTable, StatusId, TypeId } from './model.ts';
+import type { ConditionState, Mon } from './state.ts';
 
 export type MoveCategory = 'physical' | 'special' | 'status';
 
@@ -47,6 +48,8 @@ export interface MoveFlags {
   readonly punch?: true;
   readonly bite?: true;
   readonly pulse?: true;
+  /** Pulver/Sporen: wirkungslos gegen Flora-Monster und die Sturmbrille. */
+  readonly powder?: true;
 }
 
 export interface SecondaryEffect {
@@ -54,6 +57,8 @@ export interface SecondaryEffect {
   readonly chance: number;
   readonly boosts?: Partial<BoostTable>;
   readonly selfBoosts?: Partial<BoostTable>;
+  readonly status?: StatusId;
+  readonly volatile?: string;
 }
 
 export type Fraction = readonly [numerator: number, denominator: number];
@@ -98,6 +103,35 @@ export interface MoveData {
   readonly struggleRecoil?: true;
   /** Nicht im Teambuilder wählbar (z. B. die Notattacke). */
   readonly unlearnable?: true;
+
+  /** Statusattacke: verursacht dieses Statusproblem beim Ziel. */
+  readonly status?: StatusId;
+  /** Statusattacke: flüchtiger Zustand beim Ziel (bei `target: 'self'` beim Anwender). */
+  readonly volatile?: string;
+  /** Seiteneffekt für `allySide`/`foeSide`. */
+  readonly sideCondition?: string;
+  /** Wetter, Feld oder Feldeffekt für `target: 'all'`. */
+  readonly weather?: string;
+  readonly terrain?: string;
+  readonly field?: string;
+  /** Schutz-Attacke: Erfolgschance sinkt bei Wiederholung (1 → 1/3 → 1/9 …). */
+  readonly stalling?: true;
+  /** Wechselt den Anwender nach dem Treffer aus. */
+  readonly pivot?: true;
+  /** Zwei-Runden-Attacke: erst aufladen, dann angreifen. */
+  readonly charge?: true;
+  /** Bei diesem Wetter entfällt das Aufladen. */
+  readonly chargeSkipWeather?: string;
+  /** Funktioniert nur in der ersten Runde nach dem Einwechseln. */
+  readonly firstTurnOnly?: true;
+  /** Nur bei diesem Wetter einsetzbar. */
+  readonly requiresWeather?: string;
+  /** Tauscht die Position mit dem Partner. */
+  readonly allySwap?: true;
+  /** Entfernt Fallen von der eigenen Seite. */
+  readonly clearOwnHazards?: true;
+  /** Doppelte Stärke, wenn der Anwender in dieser Runde schon getroffen wurde. */
+  readonly revenge?: true;
 }
 
 export type Role =
@@ -137,12 +171,61 @@ export interface AbilityData extends EffectHooks {
   readonly id: string;
   readonly name: string;
   readonly description: string;
+  /** Schwebt: gilt nicht als „am Boden“ (Felder, Fallen). */
+  readonly floating?: true;
+  /** Brandmal halbiert den physischen Schaden nicht. */
+  readonly ignoresBurnPenalty?: true;
+  /** Gegner können keine Beeren essen, solange dieses Monster auf dem Feld ist. */
+  readonly preventsBerries?: true;
 }
 
 export interface ItemData extends EffectHooks {
   readonly id: string;
   readonly name: string;
   readonly description: string;
+}
+
+export type ConditionKind = 'status' | 'volatile' | 'side' | 'weather' | 'terrain' | 'field';
+
+/**
+ * Zustände: Statusprobleme, flüchtige Zustände, Seiteneffekte, Wetter, Felder und Feldeffekte.
+ * Ihre Hooks wirken auf das jeweils betroffene Monster (siehe `effects.ts`).
+ */
+export interface ConditionData extends EffectHooks {
+  readonly id: string;
+  readonly name: string;
+  readonly kind: ConditionKind;
+  readonly description: string;
+  /** Dauer in Runden, gezählt am Rundenende (die Startrunde zählt mit). */
+  readonly duration?: number;
+  /** Zufällige Dauer (inklusive). */
+  readonly durationRange?: readonly [number, number];
+  /** Trägt der Verursacher dieses Item, gilt `extendedDuration`. */
+  readonly extendedBy?: string;
+  readonly extendedDuration?: number;
+  /** Kein Ereignis beim Beginn/Ende (z. B. Schutz, Zurückschrecken). */
+  readonly silentStart?: true;
+  readonly silentEnd?: true;
+  /** Essenzen, die gegen dieses Statusproblem immun sind. */
+  readonly immuneTypes?: readonly TypeId[];
+  /** Reihenfolge der `onBeforeMove`-Prüfungen (höher = früher). */
+  readonly beforeMoveOrder?: number;
+  /** Fallen: wie oft stapelbar. */
+  readonly maxLayers?: number;
+  readonly hazard?: true;
+  /** Schutzwand gegen physische, spezielle oder alle Attacken. */
+  readonly screen?: 'physical' | 'special' | 'both';
+  /** Endet, wenn der Verursacher das Feld verlässt. */
+  readonly endsWithSource?: true;
+  /** Wetter: Schadensfaktor für eine Attacke (z. B. Glut ×1,5 in der Gleißsonne). */
+  weatherDamage?(move: MoveData): number | undefined;
+  /** Beim Beginn (Status/flüchtiger Zustand): Zustand vorbereiten; `false` = schlägt fehl. */
+  onConditionStart?(
+    ctx: BattleContext,
+    holder: Mon,
+    state: ConditionState,
+    source: Mon | undefined,
+  ): boolean | undefined;
 }
 
 export interface NatureData {
@@ -189,7 +272,10 @@ export interface DexData {
   readonly items: readonly ItemData[];
   readonly natures: readonly NatureData[];
   readonly formats: readonly FormatData[];
+  readonly conditions: readonly ConditionData[];
   readonly typeChart: TypeChart;
+  /** Essenzen, die nie „am Boden“ sind (Felder, Fallen). */
+  readonly floatingTypes: readonly TypeId[];
 }
 
 function indexById<T extends { readonly id: string }>(
@@ -219,6 +305,7 @@ export class Dex {
   private readonly itemsById: Map<string, ItemData>;
   private readonly naturesById: Map<string, NatureData>;
   private readonly formatsById: Map<string, FormatData>;
+  private readonly conditionsById: Map<string, ConditionData>;
 
   constructor(data: DexData) {
     this.data = data;
@@ -229,6 +316,7 @@ export class Dex {
     this.itemsById = indexById('Item', data.items);
     this.naturesById = indexById('Wesen', data.natures);
     this.formatsById = indexById('Format', data.formats);
+    this.conditionsById = indexById('Zustands', data.conditions);
   }
 
   species(id: string): SpeciesData {
@@ -249,6 +337,9 @@ export class Dex {
   format(id: string): FormatData {
     return lookup('Format', this.formatsById, id);
   }
+  condition(id: string): ConditionData {
+    return lookup('Zustands', this.conditionsById, id);
+  }
 
   hasSpecies(id: string): boolean {
     return this.speciesById.has(id);
@@ -264,5 +355,8 @@ export class Dex {
   }
   hasNature(id: string): boolean {
     return this.naturesById.has(id);
+  }
+  hasCondition(id: string): boolean {
+    return this.conditionsById.has(id);
   }
 }

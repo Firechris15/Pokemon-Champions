@@ -2,6 +2,7 @@
  * Übersetzt Engine-Ereignisse in Kampflog-Zeilen. Rein funktional und ohne Svelte,
  * damit Kampf-Bildschirm, Replays und Tests denselben Text erzeugen.
  */
+import type { Dex } from '../engine/dex.ts';
 import type { BattleEvent, EffectRef } from '../engine/events.ts';
 import type { BoostId, MonRef, SideIndex } from '../engine/model.ts';
 import type { MessageKey, MessageParams } from '../i18n/types.ts';
@@ -18,8 +19,90 @@ export interface LogContext {
   monName(mon: MonRef): string;
   sideName(side: SideIndex): string;
   moveName(id: string): string;
+  /** Name einer Fähigkeit, eines Items oder eines Zustands. */
   effectName(effect: EffectRef): string;
+  /** Ist der Seiteneffekt eine Falle (anderer Satz als bei Schutz-Effekten)? */
+  isHazard(condition: string): boolean;
 }
+
+/** Namen aus dem Datenbestand für den Kampflog (Attacken, Fähigkeiten, Items, Zustände). */
+export function dexNames(dex: Dex): Pick<LogContext, 'moveName' | 'effectName' | 'isHazard'> {
+  return {
+    moveName: (id) => dex.move(id).name,
+    effectName: (effect) => {
+      if (effect.kind === 'ability') return dex.ability(effect.id).name;
+      if (effect.kind === 'item') return dex.item(effect.id).name;
+      return dex.condition(effect.id).name;
+    },
+    isHazard: (id) => dex.condition(id).hazard === true,
+  };
+}
+
+/** Ordnet IDs ihren Textschlüsseln zu; unbekannte IDs nutzen den allgemeinen Satz. */
+function pick(
+  keys: Partial<Record<string, MessageKey>>,
+  id: string,
+  fallback: MessageKey,
+): MessageKey {
+  return keys[id] ?? fallback;
+}
+
+const STATUS_SET: Partial<Record<string, MessageKey>> = {
+  brn: 'log.statusSet.brn',
+  par: 'log.statusSet.par',
+  psn: 'log.statusSet.psn',
+  tox: 'log.statusSet.tox',
+  slp: 'log.statusSet.slp',
+  frz: 'log.statusSet.frz',
+};
+const STATUS_CURE: Partial<Record<string, MessageKey>> = {
+  brn: 'log.statusCure.brn',
+  par: 'log.statusCure.par',
+  psn: 'log.statusCure.psn',
+  tox: 'log.statusCure.tox',
+  slp: 'log.statusCure.slp',
+  frz: 'log.statusCure.frz',
+};
+const CANT_MOVE: Partial<Record<string, MessageKey>> = {
+  slp: 'log.cantMove.slp',
+  frz: 'log.cantMove.frz',
+  par: 'log.cantMove.par',
+  flinch: 'log.cantMove.flinch',
+  taunt: 'log.cantMove.taunt',
+};
+const VOLATILE_START: Partial<Record<string, MessageKey>> = {
+  confusion: 'log.volatileStart.confusion',
+  taunt: 'log.volatileStart.taunt',
+  encore: 'log.volatileStart.encore',
+  substitute: 'log.volatileStart.substitute',
+  focusenergy: 'log.volatileStart.focusenergy',
+  bound: 'log.volatileStart.bound',
+  curse: 'log.volatileStart.curse',
+  trapped: 'log.volatileStart.trapped',
+  protect: 'log.volatileStart.protect',
+  followme: 'log.volatileStart.followme',
+  helpinghand: 'log.volatileStart.helpinghand',
+  gluthunger: 'log.volatileStart.gluthunger',
+};
+const VOLATILE_END: Partial<Record<string, MessageKey>> = {
+  confusion: 'log.volatileEnd.confusion',
+  taunt: 'log.volatileEnd.taunt',
+  encore: 'log.volatileEnd.encore',
+  substitute: 'log.volatileEnd.substitute',
+  bound: 'log.volatileEnd.bound',
+};
+const WEATHER_START: Partial<Record<string, MessageKey>> = {
+  gleisssonne: 'log.weatherStart.gleisssonne',
+  sturmregen: 'log.weatherStart.sturmregen',
+  staubsturm: 'log.weatherStart.staubsturm',
+  eisgestoeber: 'log.weatherStart.eisgestoeber',
+};
+const WEATHER_END: Partial<Record<string, MessageKey>> = {
+  gleisssonne: 'log.weatherEnd.gleisssonne',
+  sturmregen: 'log.weatherEnd.sturmregen',
+  staubsturm: 'log.weatherEnd.staubsturm',
+  eisgestoeber: 'log.weatherEnd.eisgestoeber',
+};
 
 function percent(amount: number, maxHp: number): number {
   return Math.max(1, Math.round((amount / maxHp) * 100));
@@ -133,5 +216,84 @@ export function formatEvent(event: BattleEvent, ctx: LogContext): LogLine | null
       return event.winner === null
         ? line('result', 'log.tie')
         : line('result', 'log.win', { side: ctx.sideName(event.winner) });
+    case 'status_set':
+      return line('detail', pick(STATUS_SET, event.status, 'log.volatileStart.generic'), {
+        name: ctx.monName(event.mon),
+        condition: ctx.effectName({ kind: 'status', id: event.status }),
+      });
+    case 'status_cure':
+      return line('detail', pick(STATUS_CURE, event.status, 'log.volatileEnd.generic'), {
+        name: ctx.monName(event.mon),
+        condition: ctx.effectName({ kind: 'status', id: event.status }),
+      });
+    case 'cant_move':
+      return line('action', pick(CANT_MOVE, event.reason, 'log.cantMove.generic'), {
+        name: ctx.monName(event.mon),
+      });
+    case 'volatile_start':
+      return line('detail', pick(VOLATILE_START, event.volatile, 'log.volatileStart.generic'), {
+        name: ctx.monName(event.mon),
+        condition: ctx.effectName({ kind: 'volatile', id: event.volatile }),
+      });
+    case 'volatile_end':
+      return line('detail', pick(VOLATILE_END, event.volatile, 'log.volatileEnd.generic'), {
+        name: ctx.monName(event.mon),
+        condition: ctx.effectName({ kind: 'volatile', id: event.volatile }),
+      });
+    case 'side_start':
+      return line('detail', ctx.isHazard(event.condition) ? 'log.sideHazard' : 'log.sideBuff', {
+        side: ctx.sideName(event.side),
+        condition: ctx.effectName({ kind: 'side', id: event.condition }),
+      });
+    case 'side_end':
+      return line('detail', 'log.sideEnd', {
+        side: ctx.sideName(event.side),
+        condition: ctx.effectName({ kind: 'side', id: event.condition }),
+      });
+    case 'weather_start':
+      return line('action', pick(WEATHER_START, event.weather, 'log.weatherStart.generic'), {
+        condition: ctx.effectName({ kind: 'weather', id: event.weather }),
+      });
+    case 'weather_end':
+      return line('detail', pick(WEATHER_END, event.weather, 'log.weatherEnd.generic'), {
+        condition: ctx.effectName({ kind: 'weather', id: event.weather }),
+      });
+    case 'terrain_start':
+      return line('action', 'log.terrainStart', {
+        condition: ctx.effectName({ kind: 'terrain', id: event.terrain }),
+      });
+    case 'terrain_end':
+      return line('detail', 'log.terrainEnd', {
+        condition: ctx.effectName({ kind: 'terrain', id: event.terrain }),
+      });
+    case 'field_start':
+      return line('action', 'log.fieldStart', {
+        condition: ctx.effectName({ kind: 'field', id: event.field }),
+      });
+    case 'field_end':
+      return line('detail', 'log.fieldEnd', {
+        condition: ctx.effectName({ kind: 'field', id: event.field }),
+      });
+    case 'protected':
+      return event.by && event.by.kind !== 'volatile'
+        ? line('detail', 'log.protectedBy', {
+            name: ctx.monName(event.target),
+            effect: ctx.effectName(event.by),
+          })
+        : line('detail', 'log.protected', { name: ctx.monName(event.target) });
+    case 'substitute_damage':
+      return line('detail', 'log.substituteDamage', { name: ctx.monName(event.target) });
+    case 'charge':
+      return line('action', 'log.charge', {
+        name: ctx.monName(event.mon),
+        move: ctx.moveName(event.move),
+      });
+    case 'swap':
+      return line('action', 'log.swap', {
+        a: ctx.monName(event.mons[0]),
+        b: ctx.monName(event.mons[1]),
+      });
+    case 'confusion_hit':
+      return line('detail', 'log.confusionHit', { name: ctx.monName(event.mon) });
   }
 }

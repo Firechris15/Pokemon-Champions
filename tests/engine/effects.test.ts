@@ -158,7 +158,7 @@ describe('Items (Hooks)', () => {
     expect(roll(orb)).toBe(modify(roll(plain), toMod(1.3)));
     turn(orb, [move(0)], [move(0)]);
     const user = orb.mon({ side: 0, index: 0 });
-    const itemDamage = eventsOf(orb, 'damage').find((e) => e.cause === 'item');
+    const itemDamage = eventsOf(orb, 'damage').find((e) => e.effect?.id === 'lebenskristall');
     expect(itemDamage?.amount).toBe(Math.floor(user.maxHp / 10));
   });
 
