@@ -95,3 +95,90 @@ nach jeder abgeschlossenen Phase wird `main` per Fast-Forward nachgezogen (vom N
 Bis ein finaler Name feststeht, heißt das Spiel „ARENA“ (SPEC-Arbeitstitel). Logo und Icons nutzen eine
 eigene 5×7-Pixelschrift (`src/sprites/pixelFont.ts`), die als SVG mit `crispEdges` gerendert wird –
 scharf in jeder Auflösung und ohne externe Schriftdateien.
+
+## Phase 1 – Engine-Kern
+
+### D-015 · Eigene Essenzen und eigene Wirkungstabelle
+
+18 Essenzen (Typen) mit eigenen Namen und Farben (`src/data/typechart.ts`, Hintergrund in `LORE.md`).
+Die Tabelle folgt bekannten, intuitiven Element-Beziehungen, setzt aber bewusst eigene Akzente
+(z. B. Funke → Metall stark, Kristall immun gegen Funke und stark gegen Spuk, Gift → Wild stark,
+Wind → Gift stark, Psi → Wyrm stark). Balance-Kriterien sind als Test festgeschrieben:
+jede Essenz mit Stärke, Schwäche und Resistenz, höchstens 5 Schwächen, mehrere Immunitäten.
+
+### D-016 · Werte-Namen und Kategorien
+
+LP, Angriff, Verteidigung, **Fokus** (Sp.-Angriff), **Wille** (Sp.-Verteidigung), Initiative.
+Intern heißen sie `hp/atk/def/spa/spd/spe`. Attacken-Kategorien bleiben „Physisch/Speziell/Status“
+(so steht es auch in der SPEC und es ist allgemein verständlich).
+
+### D-017 · Kampfzustand als reine Daten, Dex wird übergeben
+
+`BattleState` enthält nur einfache Daten (inkl. Zufallsgenerator-Zustand). Die `Battle`-Klasse arbeitet
+darauf. Dadurch: Klonen für die KI-Vorausschau, JSON-Speichern, Fortsetzen auf einem Server.
+Inhalte kommen über einen `Dex` herein (Standard: `STANDARD_DEX`), Tests nutzen eigene Mini-Daten.
+Ereignisse enthalten IDs statt Texten; Texte entstehen in der UI (`src/ui/battleLog.ts`) über i18n.
+
+### D-018 · Hook-System schon in Phase 1
+
+Laut Plan gehört das Hook-System zu Phase 2. Es ist aber das Fundament für Fähigkeiten, Items, Status und
+Felder – ein späterer Umbau wäre teuer. Deshalb steht es jetzt (`src/engine/effects.ts`), validiert mit
+12 Fähigkeiten und 4 Items. Konvention: `holder` ist das Monster mit dem Effekt; Modifikator-Hooks liefern
+einen Faktor. Immunitäts-Prüfungen sind seiteneffektfrei (`onCheckImmunity`), damit KI und Schadensrechner
+sie gefahrlos fragen können; Reaktionen laufen in `onImmunityTriggered`.
+
+### D-019 · 4096er-Festkomma für Modifikatoren
+
+Wie im Vorbild werden Faktoren als 4096-basierte Ganzzahlen verkettet und „bei ,5 abrunden“ angewendet.
+Das macht Ergebnisse exakt reproduzierbar (keine Gleitkomma-Drift) und deckt sich mit bekannten
+Schadensrechnern. Volltreffer ignorieren Schutzwände (wie üblich; die SPEC sagt dazu nichts).
+
+### D-020 · Dynamische Initiative und Gleichstände
+
+Vor jeder einzelnen Aktion wird die verbleibende Warteschlange nach aktueller Initiative neu sortiert
+(Änderungen mitten in der Runde wirken sofort). Die Priorität wird bei der Auswahl festgelegt.
+Gleichstände entscheidet ein pro Aktion einmal gezogener Zufallswert – stabil innerhalb der Runde.
+
+### D-021 · Ziele sind Positionen
+
+Attacken zielen auf Feldpositionen, nicht auf bestimmte Monster: Wird gewechselt, trifft die Attacke den
+Neuen. Fällt ein gewählter **Gegner** vorher aus, wird auf einen anderen Gegner umgeleitet. Fällt der gewählte
+**Partner** aus, schlägt die Attacke fehl (kein ungewolltes Umlenken auf Gegner). Ohne gewähltes Ziel nimmt
+eine Ein-Ziel-Attacke einen zufälligen Gegner. Der Flächenfaktor 0,75 gilt, wenn beim Ausführen mehr als ein
+Ziel übrig ist.
+
+### D-022 · Kampfende-Sonderfälle
+
+Sind beide Seiten gleichzeitig besiegt (z. B. durch Rückstoß), endet der Kampf unentschieden.
+Ein Rundenlimit von 300 verhindert Endloskämpfe (ebenfalls unentschieden). Ohne AP setzen Monster die
+Notattacke „Verzweifler“ ein (ohne Essenz, Rückstoß 1/4 der max. LP).
+
+### D-023 · Level des Formats als Obergrenze
+
+Alle Monster kämpfen höchstens mit dem Format-Level (Standard 50); höhere Sets werden heruntergesetzt,
+niedrigere bleiben (bewusst schwächer).
+
+### D-024 · Inhaltstexte in den Datenzeilen, UI-Vokabular in i18n
+
+Namen und Beschreibungen von Monstern, Attacken, Fähigkeiten und Items stehen (deutsch) direkt in den
+Datenzeilen – so bleibt jeder neue Inhalt eine einzige Zeile. Englische Inhaltstexte kommen später als
+Übersetzungs-Datei je ID hinzu (Fallback: Deutsch). Wiederkehrendes UI-Vokabular (Essenzen, Werte,
+Kampflog-Sätze) liegt in den i18n-Dateien.
+
+### D-025 · Replays = Seed + Teams + Entscheidungen
+
+`battle.toReplay()` liefert nur Format, Seed, Teams und die angenommenen Entscheidungen;
+`Battle.replay()` spielt exakt nach (getestet, auch nach JSON-Rundreise und Klonen).
+
+### D-026 · Einfache KI, Zufallsteams und Simulator schon jetzt
+
+Der Headless-Kampf (Abnahmekriterium von Phase 1) braucht Teams und Gegner. Deshalb gibt es bereits die KI
+„Leicht“ (`src/ai/easy.ts`), sinnvolle Zufallsteams (`src/teams/random.ts`) und eine Basis-Validierung
+(`src/teams/validate.ts`, Fehler als Codes für i18n). `npm run simulate` lässt beliebig viele Kämpfe laufen
+und gibt Siegraten pro Monster und Attacken-Nutzung aus; CI lässt bei jedem Push 1000 Kämpfe laufen.
+
+### D-027 · Vorläufiges Entwicklermenü mit Engine-Test
+
+Damit Phase 1 auf dem iPad prüfbar ist, führt der Titelbildschirm in ein vorläufiges Entwicklermenü mit
+„Engine-Test“ (KI gegen KI im Browser, Textlog und Statistik) und dem Systemcheck. Das echte Hauptmenü
+ersetzt es in Phase 5; die Sprite-Galerie (Phase 3) kommt in dieses Menü.

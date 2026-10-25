@@ -2,7 +2,7 @@
 
 **ARENA** ist ein eigenständiger Monster-Doppelkampf-Simulator im HD-2D-Look (Browser + PWA, iPad zuerst).
 Die verbindliche Projektbeschreibung ist [`SPEC.md`](SPEC.md). Getroffene Entscheidungen stehen in
-[`DECISIONS.md`](DECISIONS.md). Erfundene Welt/Namen kommen in `LORE.md` (ab Phase 1).
+[`DECISIONS.md`](DECISIONS.md). Welt, Essenzen (Typen) und Namenslogik stehen in [`LORE.md`](LORE.md).
 
 ## Befehle
 
@@ -25,8 +25,10 @@ Node ≥ 22.18 (siehe `.nvmrc`): Skripte in `scripts/` laufen direkt mit `node d
 ```
 src/
   engine/    Reine Kampflogik. KEIN DOM, KEIN Three.js, KEIN Math.random/Date. Deterministisch.
+             battle.ts (Ablauf), damage.ts/stats.ts/typechart.ts (Formeln), effects.ts (Hooks),
+             events.ts (Ereignisse), choices.ts (Anfragen/Entscheidungen), state.ts, rng.ts, dex.ts (Schema)
   data/      Monster, Attacken, Fähigkeiten, Items, Typen, Formate – nur Datenzeilen.
-  ai/        KI-Gegner (nutzt die Engine wie ein Spieler).
+  ai/        KI-Gegner (nutzt die Engine wie ein Spieler), Headless-Runner, Simulator-Statistik.
   teams/     Validierung, Import/Export-Text, Zufallsteams.
   render/    Three.js-Szenen (Kampf, Titel), Kamera, Licht, Partikel.
   sprites/   Prozedurale Pixel-Grafik (Monster, Icons, Pixelschrift).
@@ -35,7 +37,7 @@ src/
   storage/   IndexedDB mit localStorage-Fallback.
   i18n/      UI-Texte: de.ts (Referenz), en.ts, t()-Funktion.
 tests/       Vitest-Tests (Node-Umgebung).
-scripts/     Node-Skripte (Icon-Generator, später Headless-Simulator).
+scripts/     Node-Skripte (Icon-Generator, Headless-Simulator).
 public/      Statische Dateien (Icons). Das Manifest erzeugt vite-plugin-pwa.
 ```
 
@@ -58,6 +60,13 @@ public/      Statische Dateien (Icons). Das Manifest erzeugt vite-plugin-pwa.
   Alle Grafiken entstehen per Code.
 - **Tests:** Jede Engine-Mechanik bekommt Vitest-Tests. Tests liegen in `tests/` und spiegeln die `src/`-Struktur.
 - **Speicherzugriffe** (IndexedDB/localStorage) immer in `try/catch`.
+- **Neue Inhalte** sind Datenzeilen in `src/data/` (Namen nach `LORE.md`). Ein Integritätstest prüft
+  Referenzen, Werte-Summen (300–600), Lernsets (15–40) und gültige Zufallsteams.
+- **Neue Effekte** (Fähigkeit/Item) nutzen die Hooks aus `src/engine/effects.ts`; fehlt ein Hook, wird er dort
+  ergänzt und in `battle.ts` an genau einer Stelle aufgerufen. Während einer Aktion `hp <= 0` prüfen –
+  `fainted` setzt erst `checkFaints()` nach der Aktion.
+- **Kampftests** nutzen die Hilfen in `tests/helpers.ts` und kontrollierte Test-Monster aus
+  `tests/engine/fixtures.ts`.
 
 ## Ablauf pro Phase (SPEC Abschnitt 9)
 

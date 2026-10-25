@@ -21,7 +21,7 @@ Neue Versionen meldet die App selbst („Neue Version verfügbar – Aktualisier
 | Phase | Inhalt                                                                    | Status |
 | ----- | ------------------------------------------------------------------------- | ------ |
 | 0     | Projekt-Setup, PWA, CI/Deploy, Titelbildschirm, Systemcheck, 3D-Testszene | ✅     |
-| 1     | Engine-Kern (RNG, Formeln, Typen, Doppelkampf-Ablauf, ~15 Monster)        | –      |
+| 1     | Engine-Kern (RNG, Formeln, Typen, Doppelkampf-Ablauf, ~15 Monster)        | ✅     |
 | 2     | Alle Kampfmechaniken, Fähigkeiten, Items, 1000-Kampf-Simulator            | –      |
 | 3     | Prozedurale Sprites, Sprite-Galerie, alle 60 Monster                      | –      |
 | 4     | Kampf-Bildschirm (2D), Kampf-UI, Kampflog, Team-Vorschau                  | –      |
@@ -39,10 +39,11 @@ npm install
 npm run dev          # Entwicklungsserver
 npm run check        # Format, Lint, Typen, Tests (wie CI)
 npm run build        # Produktions-Build nach dist/
+npm run simulate -- --battles 1000   # KI gegen KI ohne Grafik, mit Balancing-Statistik
 ```
 
 Technik: Vite · TypeScript (strict) · Svelte 5 · Three.js · Vitest · ESLint/Prettier · vite-plugin-pwa.
 Jeder Push wird von GitHub Actions geprüft; Pushes auf `main` werden automatisch auf GitHub Pages veröffentlicht.
 
 Weitere Dokumente: [`SPEC.md`](SPEC.md) (Projektbeschreibung) · [`CLAUDE.md`](CLAUDE.md) (Konventionen) ·
-[`DECISIONS.md`](DECISIONS.md) (Entscheidungen).
+[`DECISIONS.md`](DECISIONS.md) (Entscheidungen) · [`LORE.md`](LORE.md) (Welt, Essenzen, Namenslogik).
