@@ -30,6 +30,8 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+      - name: Headless-Simulator (1000 KI-Kämpfe)
+        run: npm run simulate -- --battles 1000
 
       - name: Build für GitHub Pages
         run: npm run build
