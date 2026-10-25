@@ -1,0 +1,61 @@
+import type { Messages } from './types.ts';
+
+/** English UI texts (prepared; German is the reference language). */
+export const en: Messages = {
+  app: {
+    name: 'ARENA',
+    tagline: 'Monster Double Battles',
+  },
+  title: {
+    tapToStart: 'Tap to start',
+    pressToStart: 'Click or press Enter to start',
+    phase: 'Phase {phase} · Foundation',
+  },
+  system: {
+    heading: 'System check',
+    intro: 'This page shows whether your device supports everything ARENA needs.',
+    version: 'Version',
+    build: 'Build',
+    builtAt: 'Built at',
+    display: 'Display',
+    displayValue: '{width} × {height} px · pixel ratio {dpr}',
+    orientation: 'Orientation',
+    landscape: 'Landscape',
+    portrait: 'Portrait',
+    input: 'Input',
+    touch: 'Touch',
+    mouse: 'Mouse/trackpad',
+    webgl: 'WebGL 2',
+    webglMissing: 'not available',
+    fps: 'Frame rate',
+    fpsValue: '{fps} FPS',
+    appMode: 'App mode',
+    installed: 'Installed (home screen)',
+    browser: 'In browser',
+    offline: 'Offline mode',
+    offlineReady: 'Ready – works without internet',
+    offlinePending: 'Preparing …',
+    offlineDev: 'Disabled in development mode',
+    offlineUnsupported: 'Not supported',
+    storage: 'Storage',
+    storagePersistent: 'Persistent',
+    storageBestEffort: 'May be cleared by the browser',
+    language: 'Language',
+    back: 'Back',
+    installHint: 'Install on iPad: tap “Share” in Safari, then “Add to Home Screen”.',
+  },
+  update: {
+    available: 'A new version is available.',
+    reload: 'Update',
+    later: 'Later',
+    offlineReady: 'ARENA is now playable offline.',
+  },
+  rotate: {
+    hint: 'Please rotate your device to landscape.',
+  },
+  common: {
+    ok: 'OK',
+    yes: 'Yes',
+    no: 'No',
+  },
+};
