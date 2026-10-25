@@ -4,10 +4,12 @@
   import RotateHint from './components/RotateHint.svelte';
   import SceneCanvas from './components/SceneCanvas.svelte';
   import UpdateToast from './components/UpdateToast.svelte';
+  import DevMenu from './screens/DevMenu.svelte';
+  import EngineTestScreen from './screens/EngineTestScreen.svelte';
   import SystemScreen from './screens/SystemScreen.svelte';
   import TitleScreen from './screens/TitleScreen.svelte';
 
-  type Screen = 'title' | 'system';
+  type Screen = 'title' | 'menu' | 'system' | 'engine';
 
   let screen = $state<Screen>('title');
   let stats = $state<SceneStats | null>(null);
@@ -22,15 +24,30 @@
       {#if screen === 'title'}
         <TitleScreen
           onStart={() => {
-            screen = 'system';
+            screen = 'menu';
           }}
         />
-      {:else}
+      {:else if screen === 'menu'}
+        <DevMenu
+          onOpen={(next: Screen) => {
+            screen = next;
+          }}
+          onBack={() => {
+            screen = 'title';
+          }}
+        />
+      {:else if screen === 'system'}
         <SystemScreen
           {stats}
           {webglFailed}
           onBack={() => {
-            screen = 'title';
+            screen = 'menu';
+          }}
+        />
+      {:else}
+        <EngineTestScreen
+          onBack={() => {
+            screen = 'menu';
           }}
         />
       {/if}
