@@ -17,6 +17,7 @@ Die verbindliche Projektbeschreibung ist [`SPEC.md`](SPEC.md). Getroffene Entsch
 | `npm run format`    | Prettier schreibt; `format:check` prüft nur                                |
 | `npm run check`     | Alles, was CI prüft: Format, Lint, Typen, Tests                            |
 | `npm run icons`     | App-Icons prozedural neu erzeugen (`public/icons/`)                        |
+| `npm run simulate`  | KI-gegen-KI-Kämpfe ohne Grafik (`-- --battles 1000`), Balancing-Statistik  |
 
 Node ≥ 22.18 (siehe `.nvmrc`): Skripte in `scripts/` laufen direkt mit `node datei.ts` (Type Stripping).
 
@@ -28,6 +29,7 @@ src/
              battle.ts (Ablauf), damage.ts/stats.ts/typechart.ts (Formeln), effects.ts (Hooks),
              events.ts (Ereignisse), choices.ts (Anfragen/Entscheidungen), state.ts, rng.ts, dex.ts (Schema)
   data/      Monster, Attacken, Fähigkeiten, Items, Typen, Formate – nur Datenzeilen.
+             conditions.ts: Statusprobleme, flüchtige Zustände, Seiteneffekte, Wetter, Felder, Feldeffekte.
   ai/        KI-Gegner (nutzt die Engine wie ein Spieler), Headless-Runner, Simulator-Statistik.
   teams/     Validierung, Import/Export-Text, Zufallsteams.
   render/    Three.js-Szenen (Kampf, Titel), Kamera, Licht, Partikel.
@@ -65,8 +67,14 @@ public/      Statische Dateien (Icons). Das Manifest erzeugt vite-plugin-pwa.
 - **Neue Effekte** (Fähigkeit/Item) nutzen die Hooks aus `src/engine/effects.ts`; fehlt ein Hook, wird er dort
   ergänzt und in `battle.ts` an genau einer Stelle aufgerufen. Während einer Aktion `hp <= 0` prüfen –
   `fainted` setzt erst `checkFaints()` nach der Aktion.
-- **Kampftests** nutzen die Hilfen in `tests/helpers.ts` und kontrollierte Test-Monster aus
-  `tests/engine/fixtures.ts`.
+- **Neue Zustände** (Status, Wetter, Feld, Seiteneffekt …) sind `ConditionData`-Zeilen in
+  `src/data/conditions.ts` mit denselben Hooks. Dauer über `duration`/`durationRange` (Startrunde zählt mit),
+  Laufzeitdaten nur in `ConditionState` (bleibt serialisierbar). Neue Ereignisse brauchen Kampflog-Texte in
+  `src/ui/battleLog.ts` und den i18n-Dateien.
+- **Kampftests** nutzen die Hilfen in `tests/helpers.ts` und kontrollierte Test-Monster/-Attacken (`t_*`) aus
+  `tests/engine/fixtures.ts`. Zufallsabhängiges über viele Seeds prüfen, nicht über einen Glücks-Seed.
+- **Fuzzing** (`tests/ai/fuzz.test.ts`): zufällige Sets und Aktionen; jede erlernbare Attacke muss dabei
+  vorkommen. Findet Abstürze in Effekten, die die KI selten wählt.
 
 ## Ablauf pro Phase (SPEC Abschnitt 9)
 
@@ -94,4 +102,6 @@ public/      Statische Dateien (Icons). Das Manifest erzeugt vite-plugin-pwa.
 | Phase | Status                                                             |
 | ----- | ------------------------------------------------------------------ |
 | 0     | ✅ Setup, PWA, CI/Deploy, Titel + Systemcheck mit 3D-Vorschauszene |
-| 1–8   | offen                                                              |
+| 1     | ✅ Engine-Kern, 16 Monster, KI „Leicht“, Simulator, Engine-Test    |
+| 2     | ✅ Status, Zustände, Schutz, Wetter, Felder, 45 Fähigk., 31 Items  |
+| 3–8   | offen                                                              |

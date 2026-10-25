@@ -182,3 +182,84 @@ und gibt Siegraten pro Monster und Attacken-Nutzung aus; CI lässt bei jedem Pus
 Damit Phase 1 auf dem iPad prüfbar ist, führt der Titelbildschirm in ein vorläufiges Entwicklermenü mit
 „Engine-Test“ (KI gegen KI im Browser, Textlog und Statistik) und dem Systemcheck. Das echte Hauptmenü
 ersetzt es in Phase 5; die Sprite-Galerie (Phase 3) kommt in dieses Menü.
+
+## Phase 2 – Mechaniken
+
+### D-028 · Ein Zustandsmodell für alles
+
+Statusprobleme, flüchtige Zustände, Seiteneffekte, Wetter, Felder und Feldeffekte sind **Zustandsdaten**
+(`ConditionData` in `src/data/conditions.ts`) mit denselben Hooks wie Fähigkeiten und Items. Die Engine kennt
+nur wenige Zustände beim Namen (`ENGINE_CONDITIONS`: Aufladen, Echozwang, Trugbild, Raumverzerrung), weil sie
+in den Ablauf selbst eingreifen; alles andere steckt in den Datenzeilen. Laufzeitdaten (Restrunden, Quelle,
+gewählte Attacke, Trugbild-LP, Fäulnis-Stufe, Fallen-Lagen) liegen als `ConditionState` im Kampfzustand und
+bleiben damit klon-, speicher- und replaybar.
+
+### D-029 · Hook-System erweitert statt Sonderfälle
+
+Für Phase 2 kamen Hooks für Auswahl (Sperren, Wechselsperre, Priorität), Handlungsverhinderung,
+Umlenken, Schutz/Blocken (Ziel und Partner), Immunitäten mit Bonus, Statusprobleme, flüchtige Zustände,
+Werte-Änderungen und K.O. hinzu (`src/engine/effects.ts`). Jeder Hook wird in `battle.ts` an genau einer
+Stelle aufgerufen; Effekte werden in fester Reihenfolge gesammelt: Status → flüchtig → Fähigkeit → Item →
+Seite → Wetter → Feld → Feldeffekt. Modifikator-Hooks bleiben seiteneffektfrei, damit Schadensrechner und KI
+sie gefahrlos aufrufen können.
+
+### D-030 · Fortsetzbare Rundenwarteschlange
+
+Rückzug-Attacken (Treffer, dann Wechsel) brauchen mitten in der Runde eine Entscheidung des Spielers. Die
+Runde läuft deshalb über eine Warteschlange im Zustand (`state.queue`); ein offener Wechsel steht in
+`state.pivot`, `getRequest()` fragt ihn ab und `choose()` setzt die Runde fort. Vor jeder Aktion wird nach
+aktueller Initiative neu sortiert (Aufwind, Starre oder Raumverzerrung wirken sofort in derselben Runde).
+
+### D-031 · Entscheidung gilt zum Zeitpunkt der Wahl
+
+Was ein Spieler wählt, wird so ausgeführt: Die gewählte Attacke bleibt die gewählte, auch wenn sie in
+derselben Runde gesperrt wird (z. B. durch Spott) – dann scheitert sie, statt heimlich zur Notattacke zu
+werden. Nur wer schon bei der Wahl keine Attacke mehr hatte, setzt den „Verzweifler“ ein. Echozwang und
+Aufladen ersetzen die gewählte Attacke ausdrücklich (mit eigener Meldung).
+
+### D-032 · Zahlen der Mechaniken
+
+- **Dauer:** Die Runde, in der ein Zustand beginnt, zählt mit (5 Runden = Start- und vier weitere Runden).
+  Abgezählt wird am Rundenende.
+- **Rundenende-Reihenfolge:** Wetter → Feld → Items → Statusprobleme → flüchtige Zustände → Fähigkeiten → Seite,
+  jeweils in Initiative-Reihenfolge.
+- **Schutzschild:** Erfolgschance 1/3^n bei Wiederholung; Bastion (Flächenattacken) und Vorsichtswall
+  (Prioritätsattacken) schützen die ganze Seite für eine Runde und zählen zur selben Serie.
+- **Schutzwände:** Schaden ×2732/4096 im Doppel, ×1/2 im Einzel; Volltreffer ignorieren sie.
+- **Raumverzerrung:** kehrt die Initiative nur innerhalb einer Prioritätsstufe um.
+- **Wetter/Felder:** Ein neues Wetter ersetzt das alte (gleiches Wetter erneut scheitert). Items verlängern
+  das selbst ausgelöste Wetter bzw. Feld von 5 auf 8 Runden.
+- **Verwirrung** 2–5 Handlungen, Selbsttreffer mit 1/3 (Stärke 40, physisch, ohne Essenz);
+  **Starre** 25 % keine Handlung, Initiative ×0,5; **Frostbann** taut mit 20 % pro Runde oder durch Glut-Treffer.
+
+### D-033 · Eigene Namen für alle Zustände
+
+Alle Statusprobleme, Zustände, Wetter und Felder tragen eigene Namen nach `LORE.md` (z. B. Brandmal, Starre,
+Fäulnis, Gleißsonne, Sternenfeld, Raumverzerrung). Raumverzerrung ist ein allgemeiner Begriff und keinem Spiel
+entlehnt.
+
+### D-034 · „Schwebend“ als Daten
+
+Ob ein Monster am Boden ist (Felder, Dornensaat), entscheidet `isGrounded()`: Wind-Essenz
+(`DexData.floatingTypes`) oder eine Fähigkeit mit `floating: true` heben ab. Kein Sonderfall im Code für
+einzelne Fähigkeiten.
+
+### D-035 · Kampf-Gimmick vorerst zurückgestellt
+
+Der optionale Kampf-Gimmick (SPEC 3.5) kommt nicht in Phase 2. Er braucht UI (Button, Anzeige) und Balancing
+mit vollem Monster-Bestand; das Hook-System ist darauf vorbereitet (ein Zustand mit Modifikator-Hooks). Er wird
+spätestens mit dem Balancing in Phase 7 als abschaltbare Format-Option nachgereicht.
+
+### D-036 · Fuzzing zusätzlich zur Simulation
+
+Die einfache KI wählt selten Statusattacken, und sinnvolle Zufallssets enthalten nicht jede Attacke. Deshalb
+läuft neben der 1000-Kampf-Simulation ein Fuzz-Test (`tests/ai/fuzz.test.ts`): beliebige erlernbare Attacken,
+Fähigkeiten und Items, gleichverteilt zufällige legale Aktionen inklusive Wechsel. Er stellt sicher, dass jede
+erlernbare Attacke vorkommt und Replays identisch nachspielen.
+
+### D-037 · Zufallsteams mit Unterstützung
+
+Zufallssets bekommen im Doppel oft Schutzschild, Raumverzerrungs-Monster ihre Raumverzerrung und
+Unterstützer eine passende Unterstützungsattacke (Schutzwände, Lockruf, Beistand, Felder, Status …). Fix-Items
+und Kampfweste gehen nur an Sets ohne Statusattacken. Doppel-spezifische Attacken fehlen in Einzel-Sets.
+Die Fähigkeit „Tiefenzorn“ hat aktuell noch keinen Träger; sie bekommt ihn in Phase 3.

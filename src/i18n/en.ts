@@ -9,7 +9,7 @@ export const en: Messages = {
   title: {
     tapToStart: 'Tap to start',
     pressToStart: 'Click or press Enter to start',
-    phase: 'Phase {phase} · Engine core',
+    phase: 'Phase {phase} · Battle mechanics',
   },
   system: {
     heading: 'System check',

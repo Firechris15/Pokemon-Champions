@@ -22,7 +22,7 @@ Neue Versionen meldet die App selbst („Neue Version verfügbar – Aktualisier
 | ----- | ------------------------------------------------------------------------- | ------ |
 | 0     | Projekt-Setup, PWA, CI/Deploy, Titelbildschirm, Systemcheck, 3D-Testszene | ✅     |
 | 1     | Engine-Kern (RNG, Formeln, Typen, Doppelkampf-Ablauf, ~15 Monster)        | ✅     |
-| 2     | Alle Kampfmechaniken, Fähigkeiten, Items, 1000-Kampf-Simulator            | –      |
+| 2     | Alle Kampfmechaniken, Fähigkeiten, Items, 1000-Kampf-Simulator            | ✅     |
 | 3     | Prozedurale Sprites, Sprite-Galerie, alle 60 Monster                      | –      |
 | 4     | Kampf-Bildschirm (2D), Kampf-UI, Kampflog, Team-Vorschau                  | –      |
 | 5     | Teambuilder, Hauptmenü, Einstellungen, Speichern                          | –      |

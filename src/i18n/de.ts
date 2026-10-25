@@ -11,7 +11,7 @@ export const de = {
   title: {
     tapToStart: 'Tippen zum Starten',
     pressToStart: 'Klicken oder Enter zum Starten',
-    phase: 'Phase {phase} · Engine-Kern',
+    phase: 'Phase {phase} · Kampfmechaniken',
   },
   system: {
     heading: 'Systemcheck',

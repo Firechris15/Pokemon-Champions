@@ -99,26 +99,81 @@ Fünf Wesen sind ausgeglichen (Ausgeglichen, Gelassen, Verträumt, Stoisch, Laun
   - _Mystische Wesen_ nutzen lateinisch klingende Wurzeln: Psylumen.
 - **Attacken:** beschreibende Komposita aus Element + Handlung (Glutstoß, Rankenpeitsche, Splitterhagel).
 - **Fähigkeiten:** Eigenschaftswörter oder Haltungen (Drohkulisse, Dickhaut, Scharfsinn, Kettenläufer).
-- **Items:** Material + Gegenstand (Lebenskristall, Moosherz, Ankerband, Rotbeere).
+- **Items:** Material + Gegenstand (Lebenskristall, Moosherz, Ankerband, Rotbeere). Beeren heißen nach dem,
+  wovor sie schützen oder was sie tun (Kühlbeere gegen Glut, Erdungsbeere gegen Funke, Klarbeere klärt).
+- **Zustände:** sprechende Hauptwörter, die den Körper- oder Geisteszustand beschreiben (Brandmal, Starre,
+  Schlummer, Wirrsinn). Wetter sind Naturerscheinungen (Gleißsonne, Sturmregen), Felder heißen nach der
+  Energie, die den Boden durchzieht (Funkenfeld, Blütenfeld).
 - Keine Namen, die bekannten Spielen entlehnt sind. Im Zweifel einen neuen Namen wählen.
 
-## Monster (Stand Phase 1)
+## Monster (Stand Phase 2)
 
-| Monster      | Essenzen           | Heimat            | Rolle                           |
-| ------------ | ------------------ | ----------------- | ------------------------------- |
-| Pyrrax       | Glut / Wyrm        | Kaldera           | Schneller Spezialangreifer      |
-| Gischtel     | Flut               | Perlküste         | Physischer Angreifer, Priorität |
-| Moosbock     | Flora / Erde       | Sternenwälder     | Tank, Unterstützer              |
-| Voltrabe     | Funke / Wind       | Gipfelklöster     | Schneller Spezialangreifer      |
-| Frostkauz    | Frost / Psi        | Gletscherhochland | Spezialangreifer                |
-| Bruxor       | Faust / Metall     | Perlküste         | Physischer Angreifer, Tank      |
-| Nesselnatter | Gift / Schatten    | Schattenmoore     | Mischangreifer                  |
-| Grabbler     | Erde               | Schmiedeberge     | Physischer Angreifer            |
-| Böenreiter   | Wind / Faust       | Gipfelklöster     | Schneller physischer Angreifer  |
-| Psylumen     | Psi / Astral       | Sternenwälder     | Spezialangreifer, Unterstützer  |
-| Kolonix      | Schwarm / Kristall | Kristallhöhlen    | Tank                            |
-| Geodax       | Kristall / Erde    | Kristallhöhlen    | Langsamer Tank                  |
-| Laternix     | Spuk / Glut        | Schattenmoore     | Spezialangreifer                |
-| Ferrox       | Metall / Wild      | Schmiedeberge     | Langsamer Tank                  |
-| Astrahirsch  | Astral / Flora     | Sternenwälder     | Unterstützer                    |
-| Umbrax       | Schatten / Wyrm    | Schattenmoore     | Mischangreifer                  |
+| Monster      | Essenzen           | Heimat            | Rolle                           | Fähigkeiten                                 |
+| ------------ | ------------------ | ----------------- | ------------------------------- | ------------------------------------------- |
+| Pyrrax       | Glut / Wyrm        | Kaldera           | Schneller Spezialangreifer      | Glutherz, Sonnenkind, Lichtsprinter         |
+| Gischtel     | Flut               | Perlküste         | Physischer Angreifer, Priorität | Regenbringer, Wellenreiter, Wasserschlucker |
+| Moosbock     | Flora / Erde       | Sternenwälder     | Tank, Unterstützer              | Wildwuchs, Drohkulisse, Blütenaura          |
+| Voltrabe     | Funke / Wind       | Gipfelklöster     | Schneller Spezialangreifer      | Blitzfänger, Funkenaura, Statikfell         |
+| Frostkauz    | Frost / Psi        | Gletscherhochland | Spezialangreifer                | Frostatem, Schneeläufer, Wachsam            |
+| Bruxor       | Faust / Metall     | Perlküste         | Physischer Angreifer, Tank      | Schlagkraft, Rückstoßfrei, Eisern           |
+| Nesselnatter | Gift / Schatten    | Schattenmoore     | Mischangreifer                  | Giftdorn, Beerenbann, Siegesrausch          |
+| Grabbler     | Erde               | Schmiedeberge     | Physischer Angreifer            | Sandläufer, Reißzahn, Rauhaut               |
+| Böenreiter   | Wind / Faust       | Gipfelklöster     | Schneller physischer Angreifer  | Scharfsinn, Trotzreaktion, Wucht            |
+| Psylumen     | Psi / Astral       | Sternenwälder     | Spezialangreifer, Unterstützer  | Psiaura, Schwebend, Schutzgeist             |
+| Kolonix      | Schwarm / Kristall | Kristallhöhlen    | Tank                            | Kettenläufer, Staubwirbler, Häutung         |
+| Geodax       | Kristall / Erde    | Kristallhöhlen    | Langsamer Tank                  | Unbeugsam, Rückstoßfrei, Kettenläufer       |
+| Laternix     | Spuk / Glut        | Schattenmoore     | Spezialangreifer                | Feuerfänger, Glutpanzer, Schwebend          |
+| Ferrox       | Metall / Wild      | Schmiedeberge     | Langsamer Tank                  | Trotzkraft, Dickhaut, Schalldämpfer         |
+| Astrahirsch  | Astral / Flora     | Sternenwälder     | Unterstützer                    | Sternenaura, Saftfresser, Wildwuchs         |
+| Umbrax       | Schatten / Wyrm    | Schattenmoore     | Mischangreifer                  | Hoheit, Urkraft, Pulsar                     |
+
+## Zustände, Wetter und Felder
+
+### Statusprobleme
+
+Ein Monster trägt höchstens ein Statusproblem; es bleibt auch nach dem Auswechseln.
+
+| Name      | Wirkung                                                         | Immun        |
+| --------- | --------------------------------------------------------------- | ------------ |
+| Brandmal  | Verliert 1/16 LP pro Runde, physischer Schaden halbiert         | Glut         |
+| Starre    | Initiative halbiert, mit 25 % keine Handlung                    | Funke        |
+| Toxin     | Verliert 1/8 LP pro Runde                                       | Gift, Metall |
+| Fäulnis   | Verliert 1/16, 2/16, 3/16 … LP; setzt sich beim Wechseln zurück | Gift, Metall |
+| Schlummer | 1–3 Runden keine Handlung                                       | –            |
+| Frostbann | Keine Handlung; taut mit 20 % pro Runde oder durch Glut-Treffer | Frost        |
+
+**Flüchtige Zustände** enden beim Auswechseln: Wirrsinn (Verwirrung), Schreck (Zurückschrecken), Spott,
+Echozwang, Trugbild, Schärfeblick, Aufladen, Umklammerung, Seelenfluch, Schattenbann (Wechselsperre),
+Lockruf, Beistand, Gluthunger, Fixierung.
+
+### Wetter (5 Runden, mit passendem Stein 8)
+
+Die alten Völker Valmarens glauben, dass starke Essenzträger das Wetter rufen können – Wetterstein-Amulette
+aus der Kaldera und von der Perlküste sollen es länger halten.
+
+| Wetter      | Wirkung                                                                     | Stein      |
+| ----------- | --------------------------------------------------------------------------- | ---------- |
+| Gleißsonne  | Glut ×1,5, Flut ×0,5                                                        | Glutstein  |
+| Sturmregen  | Flut ×1,5, Glut ×0,5                                                        | Regenstein |
+| Staubsturm  | 1/16 Schaden pro Runde (außer Erde, Kristall, Metall); Kristall: Wille ×1,5 | Staubstein |
+| Eisgestöber | 1/16 Schaden pro Runde (außer Frost); Frost: Verteidigung ×1,5              | Froststein |
+
+### Felder (5 Runden, mit Feldkristall 8)
+
+Felder wirken auf Monster am Boden (nicht Wind-Essenz, nicht schwebend) und verstärken eine Essenz um ×1,3.
+
+| Feld        | Essenz | Nebeneffekt                                 |
+| ----------- | ------ | ------------------------------------------- |
+| Funkenfeld  | Funke  | Niemand schläft ein                         |
+| Blütenfeld  | Flora  | Heilt 1/16 LP pro Runde                     |
+| Sternenfeld | Astral | Keine neuen Statusprobleme                  |
+| Psifeld     | Psi    | Schutz vor gegnerischen Prioritäts-Attacken |
+
+### Seiteneffekte und Feldeffekte
+
+- **Aufwind** (4 Runden): Initiative der eigenen Seite ×2.
+- **Prallschild / Ätherschild / Polarschleier** (5 Runden): weniger physischer / spezieller / beider Schaden.
+- **Bastion / Vorsichtswall** (1 Runde): schützen die Seite vor Flächen- bzw. Prioritäts-Attacken.
+- **Splitterfalle**: Einwechselnde verlieren 1/8 LP, je nach Kristall-Wirkung mehr oder weniger.
+- **Dornensaat** (bis 3 Lagen): Einwechselnde am Boden verlieren 1/8, 1/6 bzw. 1/4 LP.
+- **Raumverzerrung** (5 Runden): Langsame handeln innerhalb einer Prioritätsstufe zuerst.
