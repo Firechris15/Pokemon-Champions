@@ -59,11 +59,63 @@ function weightedPick<T>(rng: Rng, items: readonly { item: T; weight: number }[]
   return items[items.length - 1]?.item;
 }
 
+/** Statusattacken, die zur Werteverteilung passen (Verstärkung, Heilung). */
 const STATUS_PREFERENCES: Record<Profile, readonly string[]> = {
-  physical: ['kampfgeist', 'drohgebruell', 'kreischen'],
+  physical: ['kampfgeist', 'schaerfeblick', 'drohgebruell', 'kreischen'],
   special: ['sammlung', 'selbstheilung'],
-  mixed: ['drohgebruell', 'selbstheilung', 'partnerheilung', 'panzerung'],
+  mixed: ['drohgebruell', 'selbstheilung', 'panzerung'],
 };
+
+/** Unterstützung, die ein Team trägt (Initiative-Kontrolle, Schutzwände, Status, Felder …). */
+const SUPPORT_MOVES: readonly string[] = [
+  'aufwind',
+  'raumverzerrung',
+  'prallschild',
+  'aetherschild',
+  'polarschleier',
+  'lockruf',
+  'beistand',
+  'partnerheilung',
+  'spott',
+  'echozwang',
+  'starrfunke',
+  'schlafsporen',
+  'brandzeichen',
+  'faeulnisgift',
+  'giftnebel',
+  'gaukelspiel',
+  'splitterfalle',
+  'dornensaat',
+  'trugbild',
+  'seelenfluch',
+  'schattenbann',
+  'sonnenbann',
+  'wolkenruf',
+  'staubruf',
+  'frostruf',
+  'funkenfeld',
+  'bluetenfeld',
+  'sternenfeld',
+  'psifeld',
+];
+
+/** Nur im Doppel sinnvoll. */
+const DOUBLES_ONLY: ReadonlySet<string> = new Set([
+  'partnerheilung',
+  'beistand',
+  'lockruf',
+  'platztausch',
+  'bastion',
+  'vorsichtswall',
+]);
+
+/** Items, die Statusattacken ausschließen bzw. auf eine Attacke festlegen. */
+const ATTACK_ONLY_ITEMS: ReadonlySet<string> = new Set([
+  'fixband',
+  'fixbrille',
+  'fixschal',
+  'kampfweste',
+]);
 
 function pickMoves(dex: Dex, species: SpeciesData, rng: Rng, doubles: boolean): string[] {
   const profile = profileOf(species);
@@ -91,19 +143,23 @@ function pickMoves(dex: Dex, species: SpeciesData, rng: Rng, doubles: boolean): 
       ),
     );
   }
-  // 2) Manchmal eine passende Statusattacke (Unterstützer öfter).
-  const supportChance = species.roles.includes('support') ? 0.7 : 0.3;
+  const usable = (move: MoveData) => doubles || !DOUBLES_ONLY.has(move.id);
+  // 2) Im Doppel oft Schutzschild – das wichtigste Werkzeug im Doppelkampf.
+  const protect = learnable.find((move) => move.id === 'schutzschild');
+  if (doubles && protect && rng.float() < 0.45) take(protect);
+  // 3) Raumverzerrungs-Monster bringen ihre Raumverzerrung mit.
+  if (species.roles.includes('trickRoom'))
+    take(learnable.find((move) => move.id === 'raumverzerrung'));
+  // 4) Unterstützung bzw. passende Verstärkung (Unterstützer öfter).
+  const supportChance = species.roles.includes('support') ? 0.8 : 0.3;
   if (rng.float() < supportChance) {
-    const status = learnable.filter(
-      (move) => move.category === 'status' && STATUS_PREFERENCES[profile].includes(move.id),
-    );
-    if (!doubles) {
-      const index = status.findIndex((move) => move.id === 'partnerheilung');
-      if (index >= 0) status.splice(index, 1);
-    }
-    if (status.length > 0) take(rng.pick(status));
+    const support = learnable.filter((move) => SUPPORT_MOVES.includes(move.id) && usable(move));
+    const boosting = learnable.filter((move) => STATUS_PREFERENCES[profile].includes(move.id));
+    const pool =
+      species.roles.includes('support') && support.length > 0 ? support : [...support, ...boosting];
+    if (pool.length > 0) take(rng.pick(pool));
   }
-  // 3) Abdeckung: neue Essenzen bevorzugen.
+  // 5) Abdeckung: neue Essenzen bevorzugen.
   while (chosen.length < 4) {
     const options = damaging
       .filter((entry) => !chosen.includes(entry.move))
@@ -144,20 +200,24 @@ export function randomSet(
   dex: Dex,
   species: SpeciesData,
   rng: Rng,
-  options: { doubles: boolean; level: number; item?: string },
+  options: { doubles: boolean; level: number; items?: readonly string[] },
 ): MonsterSet {
   const profile = profileOf(species);
   const tank = isTank(species);
+  const moves = pickMoves(dex, species, rng, options.doubles);
   const set: MonsterSet = {
     species: species.id,
     level: options.level,
     ability: rng.pick(species.abilities),
-    moves: pickMoves(dex, species, rng, options.doubles),
+    moves,
     nature: natureFor(species, profile, tank),
     evs: evsFor(species, profile, tank),
     ivs: {},
   };
-  if (options.item !== undefined) set.item = options.item;
+  // Erstes passendes Item aus der (bereits gemischten) Kandidatenliste.
+  const hasStatus = moves.some((id) => dex.move(id).category === 'status');
+  const item = options.items?.find((id) => !(hasStatus && ATTACK_ONLY_ITEMS.has(id)));
+  if (item !== undefined) set.item = item;
   return set;
 }
 
@@ -172,13 +232,17 @@ export function randomTeam(
     (species) => !(format.rules.noLegendary && species.legendary),
   );
   const picks = rng.shuffle([...pool]).slice(0, Math.min(size, pool.length));
-  const items = rng.shuffle(dex.data.items.map((item) => item.id));
-  return picks.map((species, index) => {
-    const item = format.rules.itemClause ? items[index] : rng.pick(items);
-    return randomSet(dex, species, rng, {
+  const available = rng.shuffle(dex.data.items.map((item) => item.id));
+  return picks.map((species) => {
+    const items = format.rules.itemClause ? available : rng.shuffle([...available]);
+    const set = randomSet(dex, species, rng, {
       doubles: format.activePerSide > 1,
       level: format.level,
-      ...(item === undefined ? {} : { item }),
+      items,
     });
+    // Item-Klausel: jedes Item nur einmal.
+    if (format.rules.itemClause && set.item !== undefined)
+      available.splice(available.indexOf(set.item), 1);
+    return set;
   });
 }
