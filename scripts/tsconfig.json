@@ -1,0 +1,9 @@
+{
+  // Node-Skripte (direkt mit `node datei.ts` ausführbar) und die Vite-Konfiguration.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": ["node"]
+  },
+  "include": ["./**/*.ts", "../vite.config.ts"]
+}

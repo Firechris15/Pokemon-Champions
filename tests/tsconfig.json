@@ -1,0 +1,8 @@
+{
+  // Vitest-Tests laufen in Node, dürfen aber auch Browser-Code importieren.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "vite/client", "vite-plugin-pwa/client"]
+  },
+  "include": ["./**/*.ts"]
+}

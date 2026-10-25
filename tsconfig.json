@@ -1,0 +1,31 @@
+{
+  // App-Code (Browser). Strenge Einstellungen gelten für das ganze Projekt.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "erasableSyntaxOnly": true,
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "useUnknownInCatchVariables": true,
+
+    "types": ["vite/client", "vite-plugin-pwa/client"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.svelte"]
+}
