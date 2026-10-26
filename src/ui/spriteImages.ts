@@ -3,7 +3,7 @@
  * PNG-Daten-URLs erzeugt und im Speicher gehalten. Monster-Sheets entstehen nacheinander im
  * Hintergrund (je ein Sheet pro Arbeitsschritt), damit die Oberfläche flüssig bleibt.
  */
-import { ITEM_ICONS, STATUS_ICONS, TYPE_ICONS } from '../sprites/icons.ts';
+import { CATEGORY_ICONS, ITEM_ICONS, STATUS_ICONS, TYPE_ICONS } from '../sprites/icons.ts';
 import type { SpriteDef } from '../sprites/model.ts';
 import { MONSTER_SPRITES } from '../sprites/monsters/index.ts';
 import { renderSprite, type SpriteImage } from '../sprites/raster.ts';
@@ -139,4 +139,8 @@ export function statusIconUrl(status: string, size = 16): string {
 
 export function itemIconUrl(item: string, size = 32): string {
   return iconUrl(`item:${item}`, ITEM_ICONS[item], size);
+}
+
+export function categoryIconUrl(category: string, size = 16): string {
+  return iconUrl(`category:${category}`, CATEGORY_ICONS[category], size);
 }

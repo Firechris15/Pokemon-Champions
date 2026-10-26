@@ -27,7 +27,7 @@
   <span class="tagline">{t('app.tagline')}</span>
   <span class="start">{touch ? t('title.tapToStart') : t('title.pressToStart')}</span>
   <span class="footer">
-    {t('title.phase', { phase: 3 })} · v{__APP_VERSION__} · {__BUILD_SHA__}
+    {t('title.phase', { phase: 4 })} · v{__APP_VERSION__} · {__BUILD_SHA__}
   </span>
 </button>
 

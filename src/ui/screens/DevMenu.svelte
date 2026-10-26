@@ -3,17 +3,20 @@
   import type { MessageKey } from '../../i18n/types.ts';
 
   interface Props {
-    onOpen: (screen: 'system' | 'engine' | 'gallery') => void;
+    onOpen: (screen: MenuTarget) => void;
     onBack: () => void;
   }
+
+  type MenuTarget = 'battleSetup' | 'system' | 'engine' | 'gallery';
 
   const { onOpen, onBack }: Props = $props();
 
   const entries: {
-    screen: 'system' | 'engine' | 'gallery';
+    screen: MenuTarget;
     label: MessageKey;
     hint: MessageKey;
   }[] = [
+    { screen: 'battleSetup', label: 'menu.battle', hint: 'menu.battleHint' },
     { screen: 'gallery', label: 'menu.gallery', hint: 'menu.galleryHint' },
     { screen: 'engine', label: 'menu.engineTest', hint: 'menu.engineTestHint' },
     { screen: 'system', label: 'menu.systemCheck', hint: 'menu.systemCheckHint' },

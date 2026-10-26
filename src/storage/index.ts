@@ -1,5 +1,5 @@
 /**
  * Speicherschicht: IndexedDB mit localStorage-Fallback (Teams, Replays, Einstellungen).
- * Inhalt folgt ab Phase 5 (siehe SPEC.md, Abschnitt 9).
+ * Bisher: kleine JSON-Ablage für Einstellungen; Teams und Replays folgen in Phase 5.
  */
-export {};
+export { loadJson, saveJson } from './local.ts';

@@ -170,6 +170,27 @@ export const STATUS_ICONS: Readonly<Record<string, SpriteDef>> = {
   frz: badge(STATUS_COLORS.frz ?? '', FLAKE),
 };
 
+/** Attacken-Kategorien: physisch (Stoß), speziell (Ringe), Status (drei Punkte). */
+export const CATEGORY_COLORS: Readonly<Record<string, string>> = {
+  physical: '#d8582a',
+  special: '#4a6ad8',
+  status: '#8a8a9a',
+};
+
+export const CATEGORY_ICONS: Readonly<Record<string, SpriteDef>> = {
+  physical: badge(CATEGORY_COLORS.physical ?? '', [g(star(32, 32, 22, 8, 0.45, 0.2))]),
+  special: badge(CATEGORY_COLORS.special ?? '', [
+    g(oval(32, 32, 18, 18)),
+    part(oval(32, 32, 11, 11), 'body', 2, { ...GLYPH, tone: -1 }),
+    g(oval(32, 32, 5, 5), { z: 3 }),
+  ]),
+  status: badge(CATEGORY_COLORS.status ?? '', [
+    g(oval(32, 20, 7, 7)),
+    g(oval(20, 41, 7, 7)),
+    g(oval(44, 41, 7, 7)),
+  ]),
+};
+
 // ───────────────────────────── Items ─────────────────────────────
 
 function itemDef(palette: SpriteDef['palette'], parts: readonly Part[]): SpriteDef {

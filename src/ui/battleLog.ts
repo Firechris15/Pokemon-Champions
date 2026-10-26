@@ -17,12 +17,16 @@ export interface LogLine {
 export interface LogContext {
   t(key: MessageKey, params?: MessageParams): string;
   monName(mon: MonRef): string;
+  /** Name ohne Zusatz wie „(Gegner)“ – für Sätze, die die Seite schon nennen. */
+  plainName?(mon: MonRef): string;
   sideName(side: SideIndex): string;
   moveName(id: string): string;
   /** Name einer Fähigkeit, eines Items oder eines Zustands. */
   effectName(effect: EffectRef): string;
   /** Ist der Seiteneffekt eine Falle (anderer Satz als bei Schutz-Effekten)? */
   isHazard(condition: string): boolean;
+  /** Aus Sicht dieser Seite erzählen („Los, Pyrrax!“ statt „Team A schickt …“). */
+  perspective?: SideIndex;
 }
 
 /** Namen aus dem Datenbestand für den Kampflog (Attacken, Fähigkeiten, Items, Zustände). */
@@ -137,11 +141,25 @@ export function formatEvent(event: BattleEvent, ctx: LogContext): LogLine | null
     case 'turn_start':
       return line('turn', 'log.turn', { turn: event.turn });
     case 'switch_in':
+      if (ctx.perspective !== undefined) {
+        return line(
+          'action',
+          event.mon.side === ctx.perspective ? 'log.switchInSelf' : 'log.switchInFoe',
+          { name: ctx.plainName?.(event.mon) ?? ctx.monName(event.mon) },
+        );
+      }
       return line('action', 'log.switchIn', {
         side: ctx.sideName(event.mon.side),
         name: ctx.monName(event.mon),
       });
     case 'switch_out':
+      if (ctx.perspective !== undefined) {
+        return line(
+          'action',
+          event.mon.side === ctx.perspective ? 'log.switchOutSelf' : 'log.switchOutFoe',
+          { name: ctx.plainName?.(event.mon) ?? ctx.monName(event.mon) },
+        );
+      }
       return line('action', 'log.switchOut', { name: ctx.monName(event.mon) });
     case 'move_used':
       return line('action', 'log.move', {
@@ -210,12 +228,18 @@ export function formatEvent(event: BattleEvent, ctx: LogContext): LogLine | null
         effect: ctx.effectName({ kind: 'item', id: event.item }),
       });
     case 'forfeit':
+      if (ctx.perspective !== undefined)
+        return line(
+          'result',
+          event.side === ctx.perspective ? 'log.forfeitSelf' : 'log.forfeitFoe',
+        );
       return line('result', 'log.forfeit', { side: ctx.sideName(event.side) });
     case 'battle_end':
       if (event.reason === 'turnLimit') return line('result', 'log.turnLimit');
-      return event.winner === null
-        ? line('result', 'log.tie')
-        : line('result', 'log.win', { side: ctx.sideName(event.winner) });
+      if (event.winner === null) return line('result', 'log.tie');
+      if (ctx.perspective !== undefined)
+        return line('result', event.winner === ctx.perspective ? 'log.winSelf' : 'log.winFoe');
+      return line('result', 'log.win', { side: ctx.sideName(event.winner) });
     case 'status_set':
       return line('detail', pick(STATUS_SET, event.status, 'log.volatileStart.generic'), {
         name: ctx.monName(event.mon),
@@ -240,16 +264,36 @@ export function formatEvent(event: BattleEvent, ctx: LogContext): LogLine | null
         name: ctx.monName(event.mon),
         condition: ctx.effectName({ kind: 'volatile', id: event.volatile }),
       });
-    case 'side_start':
-      return line('detail', ctx.isHazard(event.condition) ? 'log.sideHazard' : 'log.sideBuff', {
+    case 'side_start': {
+      const hazard = ctx.isHazard(event.condition);
+      const condition = ctx.effectName({ kind: 'side', id: event.condition });
+      if (ctx.perspective !== undefined) {
+        const self = event.side === ctx.perspective;
+        const key: MessageKey = hazard
+          ? self
+            ? 'log.sideHazardSelf'
+            : 'log.sideHazardFoe'
+          : self
+            ? 'log.sideBuffSelf'
+            : 'log.sideBuffFoe';
+        return line('detail', key, { condition });
+      }
+      return line('detail', hazard ? 'log.sideHazard' : 'log.sideBuff', {
         side: ctx.sideName(event.side),
-        condition: ctx.effectName({ kind: 'side', id: event.condition }),
+        condition,
       });
-    case 'side_end':
-      return line('detail', 'log.sideEnd', {
-        side: ctx.sideName(event.side),
-        condition: ctx.effectName({ kind: 'side', id: event.condition }),
-      });
+    }
+    case 'side_end': {
+      const condition = ctx.effectName({ kind: 'side', id: event.condition });
+      if (ctx.perspective !== undefined) {
+        return line(
+          'detail',
+          event.side === ctx.perspective ? 'log.sideEndSelf' : 'log.sideEndFoe',
+          { condition },
+        );
+      }
+      return line('detail', 'log.sideEnd', { side: ctx.sideName(event.side), condition });
+    }
     case 'weather_start':
       return line('action', pick(WEATHER_START, event.weather, 'log.weatherStart.generic'), {
         condition: ctx.effectName({ kind: 'weather', id: event.weather }),
