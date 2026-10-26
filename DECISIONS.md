@@ -335,3 +335,10 @@ Die Sprite-Galerie liegt im Entwicklermenü (Monster mit Front/Rück/Silhouette/
 Angriff, Treffer, K.O., Spritesheet, Werten; Symbole; Items). Während sie offen ist, pausiert die 3D-Szene im
 Hintergrund, damit die Sprite-Erzeugung die volle Rechenzeit bekommt. Die Titelszene zeigt bei jedem Start vier
 zufällige echte Monster statt der Platzhalter.
+
+### D-046 · Scrollbare Bildschirme als Flex-Spalte
+
+Galerie und Engine-Test ließen sich auf dem iPad nicht per Touch scrollen. Ursache: Das Panel lag in einem
+Grid mit `place-items: center` und hatte `height: 100%`; das Mausrad funktionierte, Touch-Scrollen nicht
+(in Chromium mit echten Touch-Ereignissen nachgestellt). Alle scrollbaren Bildschirme sind jetzt Flex-Spalten
+mit `min-height: 0`; der Browser-Test wischt per Touch-Ereignissen und prüft die Scrollposition.

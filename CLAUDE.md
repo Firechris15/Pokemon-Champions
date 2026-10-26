@@ -61,6 +61,9 @@ public/      Statische Dateien (Icons). Das Manifest erzeugt vite-plugin-pwa.
 - **Sprache:** Bezeichner auf Englisch; Kommentare, Doku, Commit-Nachrichten und UI (Referenz) auf Deutsch.
 - **Touch zuerst:** Bedienelemente mind. 44 px (`--touch`), alles auch per Tastatur (Pfeile, Enter, Esc, 1–4).
   Querformat 1024×768 bis 2560×1440; Safe-Area-Insets (`--safe-*`) beachten.
+- **Scroll-Bereiche:** Bildschirm als Flex-Spalte, Panel `flex: 1 1 auto; min-height: 0`, Scroll-Bereich
+  `overflow-y: auto; min-height: 0`. Nie `height: 100%` in einer Grid-Zelle – dann scrollt Touch nicht
+  (D-046). Touch-Scrollen in Playwright mit `Input.dispatchTouchEvent` prüfen, nicht nur mit dem Mausrad.
 - **Keine fremden Inhalte:** keine Namen, Grafiken, Sounds oder Texte aus Pokémon oder anderen Spielen.
   Alle Grafiken entstehen per Code.
 - **Tests:** Jede Engine-Mechanik bekommt Vitest-Tests. Tests liegen in `tests/` und spiegeln die `src/`-Struktur.

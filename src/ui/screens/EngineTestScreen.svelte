@@ -167,11 +167,14 @@
 </div>
 
 <style>
+  /* Flex-Spalte statt Grid + height: 100 % – Safari löst Prozenthöhen in Grid-Zellen nicht auf,
+     dann wäre der Inhalt nicht scrollbar. */
   .screen {
     position: absolute;
     inset: 0;
-    display: grid;
-    place-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: calc(1rem + var(--safe-top)) calc(1rem + var(--safe-right))
       calc(1rem + var(--safe-bottom)) calc(1rem + var(--safe-left));
     background: rgba(5, 6, 13, 0.45);
@@ -181,7 +184,8 @@
     display: flex;
     flex-direction: column;
     width: min(960px, 100%);
-    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
     padding: 1.25rem 1.5rem;
   }
 
@@ -217,7 +221,10 @@
     flex: 1;
     min-height: 0;
     margin-top: 1rem;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
     user-select: text;
     -webkit-user-select: text;

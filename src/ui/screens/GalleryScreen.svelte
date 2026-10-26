@@ -322,11 +322,14 @@
 </div>
 
 <style>
+  /* Flex-Spalte statt Grid + height: 100 % – Safari löst Prozenthöhen in Grid-Zellen nicht auf,
+     dann wäre der Inhalt nicht scrollbar. */
   .screen {
     position: absolute;
     inset: 0;
-    display: grid;
-    place-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: calc(1rem + var(--safe-top)) calc(1rem + var(--safe-right))
       calc(1rem + var(--safe-bottom)) calc(1rem + var(--safe-left));
     background: rgba(5, 6, 13, 0.55);
@@ -336,7 +339,8 @@
     display: flex;
     flex-direction: column;
     width: min(1280px, 100%);
-    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
     padding: 1rem 1.25rem;
   }
 
@@ -395,7 +399,10 @@
     flex: 1;
     min-height: 0;
     margin-top: 0.75rem;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -556,8 +563,9 @@
     position: fixed;
     z-index: 10;
     inset: 0;
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: calc(1rem + var(--safe-top)) calc(1rem + var(--safe-right))
       calc(1rem + var(--safe-bottom)) calc(1rem + var(--safe-left));
     background: rgba(5, 6, 13, 0.7);
@@ -569,8 +577,12 @@
     gap: 1.25rem;
     width: min(1000px, 100%);
     max-height: 100%;
+    min-height: 0;
     padding: 1rem 1.25rem;
-    overflow: auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 
   .stage {

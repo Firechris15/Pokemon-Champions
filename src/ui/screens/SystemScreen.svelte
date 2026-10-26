@@ -150,8 +150,10 @@
   .screen {
     position: absolute;
     inset: 0;
-    display: grid;
-    place-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     padding: calc(1rem + var(--safe-top)) calc(1rem + var(--safe-right))
       calc(1rem + var(--safe-bottom)) calc(1rem + var(--safe-left));
     background: rgba(5, 6, 13, 0.35);
@@ -160,7 +162,10 @@
   .panel {
     width: min(920px, 100%);
     max-height: 100%;
-    overflow: auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
     padding: 1.25rem 1.5rem;
     -webkit-overflow-scrolling: touch;
   }
