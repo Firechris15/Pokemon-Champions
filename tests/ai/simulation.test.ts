@@ -25,7 +25,11 @@ describe('Headless-Simulator (KI gegen KI)', () => {
       expect(report.turns.max).toBeLessThan(TURN_LIMIT);
       // Beide Seiten gewinnen regelmäßig – kein systematischer Vorteil einer Seite.
       expect(Math.min(...report.wins)).toBeGreaterThan(battles * 0.3);
-      expect(Object.keys(report.species).length).toBe(STANDARD_DEX.data.species.length);
+      const format = STANDARD_DEX.format(formatId);
+      const eligible = STANDARD_DEX.data.species.filter(
+        (species) => !(format.rules.noLegendary && species.legendary),
+      );
+      expect(Object.keys(report.species).length).toBe(eligible.length);
       expect(Object.keys(report.moves).length).toBeGreaterThan(60);
     },
   );

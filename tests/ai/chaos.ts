@@ -62,7 +62,10 @@ export const chaosAgent: Agent = {
 
 /** Team aus beliebigen Monstern mit gleichverteilt gezogenen Attacken, Fähigkeiten und Items. */
 export function chaosTeam(dex: Dex, format: FormatData, rng: Rng): MonsterSet[] {
-  const species = rng.shuffle([...dex.data.species]).slice(0, format.maxTeamSize);
+  const pool = dex.data.species.filter(
+    (species) => !(format.rules.noLegendary && species.legendary),
+  );
+  const species = rng.shuffle([...pool]).slice(0, format.maxTeamSize);
   const items = rng.shuffle(dex.data.items.map((item) => item.id));
   return species.map((entry, index) => ({
     species: entry.id,

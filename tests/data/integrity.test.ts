@@ -16,10 +16,11 @@ import { validateTeam } from '../../src/teams/validate.ts';
 const unique = (values: string[]) => new Set(values).size === values.length;
 
 describe('Datenbestand', () => {
-  it('erfüllt den Umfang von Phase 1', () => {
-    expect(SPECIES.length).toBeGreaterThanOrEqual(15);
-    expect(MOVES.length).toBeGreaterThanOrEqual(40);
-    expect(ABILITIES.length).toBeGreaterThanOrEqual(10);
+  it('erfüllt den Start-Umfang der SPEC (60 Monster, 150 Attacken, 40 Fähigkeiten, 30 Items)', () => {
+    expect(SPECIES.length).toBeGreaterThanOrEqual(60);
+    expect(MOVES.filter((m) => !m.unlearnable).length).toBeGreaterThanOrEqual(150);
+    expect(ABILITIES.length).toBeGreaterThanOrEqual(40);
+    expect(ITEMS.length).toBeGreaterThanOrEqual(30);
     expect(FORMATS.map((f) => f.id)).toEqual(
       expect.arrayContaining([
         'doubles-standard',
@@ -80,6 +81,80 @@ describe('Datenbestand', () => {
         SPECIES.some((s) => s.types.includes(type)),
         type,
       ).toBe(true);
+  });
+
+  it('jede Essenz hat mehrere Monster (mindestens fünf)', () => {
+    for (const type of TYPE_IDS) {
+      const count = SPECIES.filter((s) => s.types.includes(type)).length;
+      expect(count, type).toBeGreaterThanOrEqual(5);
+    }
+  });
+
+  it('kein Monster ist in allen Werten besser als ein anderes (Legenden ausgenommen)', () => {
+    const regular = SPECIES.filter((s) => !s.legendary);
+    const dominated: string[] = [];
+    for (const a of regular) {
+      for (const b of regular) {
+        if (a === b) continue;
+        if (STAT_IDS.every((stat) => a.baseStats[stat] >= b.baseStats[stat]))
+          dominated.push(`${a.id} ≥ ${b.id}`);
+      }
+    }
+    expect(dominated).toEqual([]);
+  });
+
+  it('Legenden sind wenige, stark und nur im freien Format erlaubt', () => {
+    const legends = SPECIES.filter((s) => s.legendary);
+    expect(legends.length).toBeGreaterThan(0);
+    expect(legends.length).toBeLessThanOrEqual(4);
+    const strongest = Math.max(
+      ...SPECIES.filter((s) => !s.legendary).map((s) =>
+        STAT_IDS.reduce((sum, stat) => sum + s.baseStats[stat], 0),
+      ),
+    );
+    for (const legend of legends) {
+      const total = STAT_IDS.reduce((sum, stat) => sum + legend.baseStats[stat], 0);
+      expect(total, legend.id).toBeGreaterThan(strongest);
+    }
+    expect(FORMATS.find((f) => f.id === 'doubles-standard')?.rules.noLegendary).toBe(true);
+    expect(FORMATS.find((f) => f.id === 'doubles-free')?.rules.noLegendary).toBe(false);
+  });
+
+  it('alle Rollen der SPEC sind vertreten (Wetter, Felder, Raumverzerrung, Unterstützung …)', () => {
+    const regular = SPECIES.filter((s) => !s.legendary);
+    const withAbility = (id: string) => regular.filter((s) => s.abilities.includes(id)).length;
+    const withMove = (id: string) => regular.filter((s) => s.learnset.includes(id)).length;
+    for (const setter of ['sonnenkind', 'regenbringer', 'staubwirbler', 'frostatem']) {
+      expect(withAbility(setter), setter).toBeGreaterThanOrEqual(2);
+    }
+    for (const aura of ['funkenaura', 'bluetenaura', 'sternenaura', 'psiaura']) {
+      expect(withAbility(aura), aura).toBeGreaterThanOrEqual(1);
+    }
+    for (const move of ['raumverzerrung', 'aufwind', 'lockruf', 'prallschild', 'aetherschild']) {
+      expect(withMove(move), move).toBeGreaterThanOrEqual(3);
+    }
+    const roles = new Set(regular.flatMap((s) => s.roles));
+    for (const role of [
+      'physicalSweeper',
+      'specialSweeper',
+      'mixed',
+      'tank',
+      'support',
+      'priority',
+      'weather',
+      'trickRoom',
+      'speedControl',
+      'redirect',
+    ]) {
+      expect(roles.has(role as never), role).toBe(true);
+    }
+    // Jede Fähigkeit hat mindestens einen Träger.
+    for (const ability of ABILITIES) {
+      expect(
+        SPECIES.some((s) => s.abilities.includes(ability.id)),
+        ability.id,
+      ).toBe(true);
+    }
   });
 
   it('Attacken haben gültige Werte (keine Sofort-K.O.-Attacken)', () => {

@@ -10,7 +10,7 @@ const dex = STANDARD_DEX;
 
 describe('Fuzzing: zufällige legale Aktionen mit beliebigen Sets', () => {
   it.each([
-    ['doubles-standard', 600],
+    ['doubles-free', 700],
     ['singles-standard', 300],
   ] as const)(
     '%s: %i Kämpfe ohne Fehler, jede erlernbare Attacke kommt zum Einsatz',
@@ -42,7 +42,11 @@ describe('Fuzzing: zufällige legale Aktionen mit beliebigen Sets', () => {
         if (i % 50 === 0)
           expect(Battle.replay(dex, battle.toReplay()).events).toEqual(battle.events);
       }
-      const learnable = new Set(dex.data.species.flatMap((species) => species.learnset));
+      const learnable = new Set(
+        dex.data.species
+          .filter((species) => !(format.rules.noLegendary && species.legendary))
+          .flatMap((species) => species.learnset),
+      );
       expect([...learnable].filter((id) => !used.has(id))).toEqual([]);
       expect(abilities.size).toBeGreaterThan(20);
       // Passive Items (Fixband, Essenz-Verstärker …) melden sich nicht – nur aktive zählen.
