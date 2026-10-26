@@ -263,3 +263,75 @@ Zufallssets bekommen im Doppel oft Schutzschild, Raumverzerrungs-Monster ihre Ra
 Unterstützer eine passende Unterstützungsattacke (Schutzwände, Lockruf, Beistand, Felder, Status …). Fix-Items
 und Kampfweste gehen nur an Sets ohne Statusattacken. Doppel-spezifische Attacken fehlen in Einzel-Sets.
 Die Fähigkeit „Tiefenzorn“ hat aktuell noch keinen Träger; sie bekommt ihn in Phase 3.
+
+## Phase 3 – Sprites und Inhalte
+
+### D-038 · Sprites aus geschichteten Grundformen statt Pixel-Strings
+
+Die SPEC lässt zwei Wege offen: Pixel-Raster als Strings oder geschichtete Grundformen. Gewählt sind
+**Grundformen** (Ellipsen, verjüngte Gliedmaßen, Bézier-Schläuche, Polygone, Spitzen, Sterne), die ein
+eigener Rasterizer (`src/sprites/raster.ts`) zu Pixel-Art macht:
+
+- Abdeckung mit 2×2-Abtastung, Normale pro Form → Licht von links oben, 2–4 Töne pro Material.
+- Farbrampen mit Farbton-Verschiebung (Schatten kühler, Lichter wärmer), Glanzpunkte für Metall/Kristall.
+- Schlagschatten vorderer Teile, dunkle Innenlinien zwischen Teilen, 1-Pixel-Außenlinie.
+- Animation ist eine Transformation der Formen (Atmen, Schweben, Pendeln von Flügeln/Schwänzen,
+  Angriffspose) und wird jedes Mal neu gerastert – das wirkt lebendiger als verschobene Pixelblöcke.
+
+Gründe: 60 Monster × Front/Rück × Animationsbilder als Strings wären hunderttausende Zeichen, kaum zu pflegen
+und schwer zu animieren. Formen sind kompakt (~40 Zeilen pro Monster), skalieren auf jede Größe (Icons werden
+neu gerastert statt verkleinert) und Änderungen am Licht oder an der Linienführung wirken auf alle Monster.
+
+### D-039 · Sprite-Definitionen getrennt von den Spieldaten
+
+Die SPEC nennt „Sprite-Definition, Farbpalette“ als Teil des Monster-Datensatzes. Sie liegen trotzdem in
+`src/sprites/monsters/` (nach Monster-ID), nicht in `src/data/species.ts`: Engine und späterer Server brauchen
+keine Grafikdaten, und die Datenzeilen bleiben lesbar. Ein Test stellt sicher, dass jedes Monster genau eine
+Sprite-Definition hat.
+
+### D-040 · Rückansicht, Bildformat, Treffer und K.O.
+
+- **Rückansicht** = gespiegelte Frontansicht ohne Gesicht/Bauch (`view: 'front'`), mit eigenen Rücken-Teilen
+  und umgedrehter Tiefe für Schwänze und Flügel (`backZ`). Das hält 60 Designs pflegbar.
+- **Bildformat:** Entwurfsraster 64×64, ein Animationsbild ist 80×80 (8 px Rand), damit Angriffspose,
+  Schweben und lange Schwänze nie abgeschnitten werden (getestet für alle Posen).
+- **Spritesheet:** Zeile Front, Zeile Rück; je 4 Leerlauf-Bilder + Angriffspose. Icons 32×32 (2 Bilder)
+  werden auf die sichtbare Fläche zugeschnitten und neu gerastert.
+- **Treffer-Blinken und K.O.** sind Darstellungseffekte (heute CSS in der Galerie, ab Phase 4/6 Shader),
+  keine eigenen Bilder.
+
+### D-041 · Erzeugung beim Start statt beim Build
+
+Sprites entstehen auf dem Gerät (ca. 20 ms pro Monster auf dem Desktop), in Zeitscheiben im Hintergrund und
+werden im Speicher gecacht. So bleibt das Paket klein (keine Bilddateien) und Änderungen am Generator brauchen
+keinen Export-Schritt. Ein dauerhafter Cache (IndexedDB) kann mit der Speicherschicht in Phase 5 folgen,
+falls die Ladezeit auf dem iPad stört. `npm run sprites` erzeugt Kontaktabzüge als PNG für die Kontrolle ohne
+Browser.
+
+### D-042 · Qualitätsregeln als Tests
+
+`tests/sprites/` prüft für jedes Monster: 8–16 Farben über alle Bilder, nichts am Bildrand abgeschnitten,
+deterministisch, Leerlauf/Rück/Angriff unterscheiden sich, dunkle Außenlinie, und dass sich alle
+Silhouetten paarweise deutlich unterscheiden (Überdeckung < 80 %).
+
+### D-043 · Symbole mit demselben System
+
+Essenz-, Status- und Item-Symbole sind ebenfalls Formen-Definitionen (`src/sprites/icons.ts`), gerastert auf
+16–32 px. UI-Rahmen und Arena-Texturen bleiben bis Phase 4/6 bei den bestehenden CSS-Rahmen bzw. den
+prozeduralen Texturen der Vorschauszene.
+
+### D-044 · Inhaltsumfang und Balance-Regeln
+
+60 Monster (davon 3 Legenden mit Basiswert-Summe 600, nur im freien Format), 157 Attacken (156 lernbar),
+45 Fähigkeiten, 31 Items. Regeln als Tests: jede Essenz ≥ 5 Monster, kein reguläres Monster ist in allen
+Werten mindestens so gut wie ein anderes, jede Fähigkeit hat einen Träger, jeder Wetter-Typ hat ≥ 2 Setzer,
+jedes Feld ≥ 1, Raumverzerrung/Aufwind/Lockruf/Schutzwände lernen jeweils ≥ 3 Monster. Entwicklungslinien
+(optional laut SPEC) entfallen vorerst: Vorstufen wären in allen Werten schwächer und widersprächen der
+Balance-Regel.
+
+### D-045 · Galerie und Titelszene
+
+Die Sprite-Galerie liegt im Entwicklermenü (Monster mit Front/Rück/Silhouette/Animation, Detailansicht mit
+Angriff, Treffer, K.O., Spritesheet, Werten; Symbole; Items). Während sie offen ist, pausiert die 3D-Szene im
+Hintergrund, damit die Sprite-Erzeugung die volle Rechenzeit bekommt. Die Titelszene zeigt bei jedem Start vier
+zufällige echte Monster statt der Platzhalter.

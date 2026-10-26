@@ -6,18 +6,19 @@ Die verbindliche Projektbeschreibung ist [`SPEC.md`](SPEC.md). Getroffene Entsch
 
 ## Befehle
 
-| Befehl              | Zweck                                                                      |
-| ------------------- | -------------------------------------------------------------------------- |
-| `npm run dev`       | Entwicklungsserver (Service Worker ist im Dev-Modus aus)                   |
-| `npm run build`     | Produktions-Build nach `dist/` (`BASE_PATH=/Pokemon-Champions/` wie in CI) |
-| `npm run preview`   | Build lokal ausliefern (mit gleichem `BASE_PATH` wie beim Build starten)   |
-| `npm test`          | Vitest einmalig; `npm run test:watch` im Watch-Modus                       |
-| `npm run typecheck` | svelte-check (App) + tsc für Headless-Code, Tests und Skripte              |
-| `npm run lint`      | ESLint (typbewusst, inkl. Svelte)                                          |
-| `npm run format`    | Prettier schreibt; `format:check` prüft nur                                |
-| `npm run check`     | Alles, was CI prüft: Format, Lint, Typen, Tests                            |
-| `npm run icons`     | App-Icons prozedural neu erzeugen (`public/icons/`)                        |
-| `npm run simulate`  | KI-gegen-KI-Kämpfe ohne Grafik (`-- --battles 1000`), Balancing-Statistik  |
+| Befehl              | Zweck                                                                        |
+| ------------------- | ---------------------------------------------------------------------------- |
+| `npm run dev`       | Entwicklungsserver (Service Worker ist im Dev-Modus aus)                     |
+| `npm run build`     | Produktions-Build nach `dist/` (`BASE_PATH=/Pokemon-Champions/` wie in CI)   |
+| `npm run preview`   | Build lokal ausliefern (mit gleichem `BASE_PATH` wie beim Build starten)     |
+| `npm test`          | Vitest einmalig; `npm run test:watch` im Watch-Modus                         |
+| `npm run typecheck` | svelte-check (App) + tsc für Headless-Code, Tests und Skripte                |
+| `npm run lint`      | ESLint (typbewusst, inkl. Svelte)                                            |
+| `npm run format`    | Prettier schreibt; `format:check` prüft nur                                  |
+| `npm run check`     | Alles, was CI prüft: Format, Lint, Typen, Tests                              |
+| `npm run icons`     | App-Icons prozedural neu erzeugen (`public/icons/`)                          |
+| `npm run simulate`  | KI-gegen-KI-Kämpfe ohne Grafik (`-- --battles 1000`), Balancing-Statistik    |
+| `npm run sprites`   | Kontaktabzug der Sprites als PNG (`-- <ordner> [id,id]`), Qualitätskontrolle |
 
 Node ≥ 22.18 (siehe `.nvmrc`): Skripte in `scripts/` laufen direkt mit `node datei.ts` (Type Stripping).
 
@@ -33,7 +34,9 @@ src/
   ai/        KI-Gegner (nutzt die Engine wie ein Spieler), Headless-Runner, Simulator-Statistik.
   teams/     Validierung, Import/Export-Text, Zufallsteams.
   render/    Three.js-Szenen (Kampf, Titel), Kamera, Licht, Partikel.
-  sprites/   Prozedurale Pixel-Grafik (Monster, Icons, Pixelschrift).
+  sprites/   Prozedurale Pixel-Grafik, rein rechnend (kein DOM): model.ts (Formen-Bausteine),
+             raster.ts (Licht, Linien), sheet.ts (Spritesheets, Icons), monsters/ (60 Definitionen),
+             icons.ts (Essenzen, Status, Items), pixelFont.ts.
   audio/     Prozedurale Musik/SFX (WebAudio).
   ui/        Svelte-Bildschirme und -Komponenten, globale Styles, PWA-Zustand.
   storage/   IndexedDB mit localStorage-Fallback.
@@ -73,6 +76,10 @@ public/      Statische Dateien (Icons). Das Manifest erzeugt vite-plugin-pwa.
   `src/ui/battleLog.ts` und den i18n-Dateien.
 - **Kampftests** nutzen die Hilfen in `tests/helpers.ts` und kontrollierte Test-Monster/-Attacken (`t_*`) aus
   `tests/engine/fixtures.ts`. Zufallsabhängiges über viele Seeds prüfen, nicht über einen Glücks-Seed.
+- **Neues Monster:** Datenzeile in `src/data/species.ts` (Namen nach `LORE.md`, keine Werte-Dominanz),
+  Sprite-Definition in `src/sprites/monsters/` (Front schaut nach links, Boden bei y ≈ 60, Gesicht mit
+  `view: 'front'`), Zeile in `LORE.md`. Mit `npm run sprites -- <ordner> <id>` ansehen; die Tests prüfen
+  Palette (8–16 Farben), Bildrand, Silhouetten-Abstand und Außenlinie.
 - **Fuzzing** (`tests/ai/fuzz.test.ts`): zufällige Sets und Aktionen; jede erlernbare Attacke muss dabei
   vorkommen. Findet Abstürze in Effekten, die die KI selten wählt.
 
@@ -104,4 +111,5 @@ public/      Statische Dateien (Icons). Das Manifest erzeugt vite-plugin-pwa.
 | 0     | ✅ Setup, PWA, CI/Deploy, Titel + Systemcheck mit 3D-Vorschauszene |
 | 1     | ✅ Engine-Kern, 16 Monster, KI „Leicht“, Simulator, Engine-Test    |
 | 2     | ✅ Status, Zustände, Schutz, Wetter, Felder, 45 Fähigk., 31 Items  |
-| 3–8   | offen                                                              |
+| 3     | ✅ Sprite-Generator, Galerie, 60 Monster, 157 Attacken, Symbole    |
+| 4–8   | offen                                                              |

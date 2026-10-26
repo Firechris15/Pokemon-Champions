@@ -5,6 +5,7 @@ beleuchteten 3D-Szene, Doppelkämpfe 2 gegen 2, alles sofort verfügbar – Team
 Team verbessern. Läuft im Browser auf iPad und PC und lässt sich als App installieren (offline spielbar).
 
 Alle Monster, Typen, Attacken, Grafiken und Sounds sind eigene Inhalte und werden per Code erzeugt.
+Aktuell: 60 Monster, 157 Attacken, 45 Fähigkeiten, 31 Items, 18 Essenzen – alle Sprites prozedural.
 
 **Live:** <https://firechris15.github.io/Pokemon-Champions/>
 
@@ -23,7 +24,7 @@ Neue Versionen meldet die App selbst („Neue Version verfügbar – Aktualisier
 | 0     | Projekt-Setup, PWA, CI/Deploy, Titelbildschirm, Systemcheck, 3D-Testszene | ✅     |
 | 1     | Engine-Kern (RNG, Formeln, Typen, Doppelkampf-Ablauf, ~15 Monster)        | ✅     |
 | 2     | Alle Kampfmechaniken, Fähigkeiten, Items, 1000-Kampf-Simulator            | ✅     |
-| 3     | Prozedurale Sprites, Sprite-Galerie, alle 60 Monster                      | –      |
+| 3     | Prozedurale Sprites, Sprite-Galerie, alle 60 Monster                      | ✅     |
 | 4     | Kampf-Bildschirm (2D), Kampf-UI, Kampflog, Team-Vorschau                  | –      |
 | 5     | Teambuilder, Hauptmenü, Einstellungen, Speichern                          | –      |
 | 6     | HD-2D-Kampfszene                                                          | –      |
@@ -40,6 +41,7 @@ npm run dev          # Entwicklungsserver
 npm run check        # Format, Lint, Typen, Tests (wie CI)
 npm run build        # Produktions-Build nach dist/
 npm run simulate -- --battles 1000   # KI gegen KI ohne Grafik, mit Balancing-Statistik
+npm run sprites -- sprite-preview    # Kontaktabzüge aller Monster-Sprites als PNG
 ```
 
 Technik: Vite · TypeScript (strict) · Svelte 5 · Three.js · Vitest · ESLint/Prettier · vite-plugin-pwa.

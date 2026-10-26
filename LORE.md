@@ -23,6 +23,7 @@ Wichtige Regionen (tauchen in Kompendium-Texten und Arenen auf):
 | Schmiedeberge     | Erzadern, Minen, Schmieden                        |
 | Kristallhöhlen    | Leuchtende Drusen tief unter dem Gebirge          |
 | Sternenwälder     | Uralte Wälder, in denen nachts Sternenstaub fällt |
+| Sonnenwüste       | Dünenmeer mit versunkenen Ruinen alter Arenen     |
 
 ## Monster und Essenzen
 
@@ -106,26 +107,90 @@ Fünf Wesen sind ausgeglichen (Ausgeglichen, Gelassen, Verträumt, Stoisch, Laun
   Energie, die den Boden durchzieht (Funkenfeld, Blütenfeld).
 - Keine Namen, die bekannten Spielen entlehnt sind. Im Zweifel einen neuen Namen wählen.
 
-## Monster (Stand Phase 2)
+## Monster (Stand Phase 3: 60)
 
-| Monster      | Essenzen           | Heimat            | Rolle                           | Fähigkeiten                                 |
-| ------------ | ------------------ | ----------------- | ------------------------------- | ------------------------------------------- |
-| Pyrrax       | Glut / Wyrm        | Kaldera           | Schneller Spezialangreifer      | Glutherz, Sonnenkind, Lichtsprinter         |
-| Gischtel     | Flut               | Perlküste         | Physischer Angreifer, Priorität | Regenbringer, Wellenreiter, Wasserschlucker |
-| Moosbock     | Flora / Erde       | Sternenwälder     | Tank, Unterstützer              | Wildwuchs, Drohkulisse, Blütenaura          |
-| Voltrabe     | Funke / Wind       | Gipfelklöster     | Schneller Spezialangreifer      | Blitzfänger, Funkenaura, Statikfell         |
-| Frostkauz    | Frost / Psi        | Gletscherhochland | Spezialangreifer                | Frostatem, Schneeläufer, Wachsam            |
-| Bruxor       | Faust / Metall     | Perlküste         | Physischer Angreifer, Tank      | Schlagkraft, Rückstoßfrei, Eisern           |
-| Nesselnatter | Gift / Schatten    | Schattenmoore     | Mischangreifer                  | Giftdorn, Beerenbann, Siegesrausch          |
-| Grabbler     | Erde               | Schmiedeberge     | Physischer Angreifer            | Sandläufer, Reißzahn, Rauhaut               |
-| Böenreiter   | Wind / Faust       | Gipfelklöster     | Schneller physischer Angreifer  | Scharfsinn, Trotzreaktion, Wucht            |
-| Psylumen     | Psi / Astral       | Sternenwälder     | Spezialangreifer, Unterstützer  | Psiaura, Schwebend, Schutzgeist             |
-| Kolonix      | Schwarm / Kristall | Kristallhöhlen    | Tank                            | Kettenläufer, Staubwirbler, Häutung         |
-| Geodax       | Kristall / Erde    | Kristallhöhlen    | Langsamer Tank                  | Unbeugsam, Rückstoßfrei, Kettenläufer       |
-| Laternix     | Spuk / Glut        | Schattenmoore     | Spezialangreifer                | Feuerfänger, Glutpanzer, Schwebend          |
-| Ferrox       | Metall / Wild      | Schmiedeberge     | Langsamer Tank                  | Trotzkraft, Dickhaut, Schalldämpfer         |
-| Astrahirsch  | Astral / Flora     | Sternenwälder     | Unterstützer                    | Sternenaura, Saftfresser, Wildwuchs         |
-| Umbrax       | Schatten / Wyrm    | Schattenmoore     | Mischangreifer                  | Hoheit, Urkraft, Pulsar                     |
+Die Kompendium-Nummer folgt der Reihenfolge in `src/data/species.ts`. ★ = Legende (nur im freien Format).
+Kompendium-Texte stehen in den Datenzeilen (`lore`).
+
+| Nr.  | Monster       | Essenzen           | Heimat            | Rolle                                            | Fähigkeiten                                 |
+| ---- | ------------- | ------------------ | ----------------- | ------------------------------------------------ | ------------------------------------------- |
+| #001 | Pyrrax        | Glut / Wyrm        | Kaldera           | spez. Angreifer, Wetter                          | Glutherz, Sonnenkind, Lichtsprinter         |
+| #002 | Gischtel      | Flut               | Perlküste         | phys. Angreifer, Priorität                       | Regenbringer, Wellenreiter, Wasserschlucker |
+| #003 | Moosbock      | Flora / Erde       | Sternenwälder     | Tank, Unterstützer                               | Wildwuchs, Drohkulisse, Blütenaura          |
+| #004 | Voltrabe      | Funke / Wind       | Gipfelklöster     | spez. Angreifer, Initiative-Kontrolle            | Blitzfänger, Funkenaura, Statikfell         |
+| #005 | Frostkauz     | Frost / Psi        | Gletscherhochland | spez. Angreifer                                  | Frostatem, Schneeläufer, Wachsam            |
+| #006 | Bruxor        | Faust / Metall     | Perlküste         | phys. Angreifer, Priorität, Tank                 | Schlagkraft, Rückstoßfrei, Eisern           |
+| #007 | Nesselnatter  | Gift / Schatten    | Schattenmoore     | Mischangreifer, Unterstützer                     | Giftdorn, Beerenbann, Siegesrausch          |
+| #008 | Grabbler      | Erde               | Schmiedeberge     | phys. Angreifer                                  | Sandläufer, Reißzahn, Rauhaut               |
+| #009 | Böenreiter    | Wind / Faust       | Gipfelklöster     | phys. Angreifer, Priorität                       | Scharfsinn, Trotzreaktion, Wucht            |
+| #010 | Psylumen      | Psi / Astral       | Sternenwälder     | spez. Angreifer, Unterstützer                    | Psiaura, Schwebend, Schutzgeist             |
+| #011 | Kolonix       | Schwarm / Kristall | Kristallhöhlen    | Tank, phys. Angreifer                            | Kettenläufer, Staubwirbler, Häutung         |
+| #012 | Geodax        | Kristall / Erde    | Kristallhöhlen    | Tank, phys. Angreifer                            | Unbeugsam, Rückstoßfrei, Kettenläufer       |
+| #013 | Laternix      | Spuk / Glut        | Schattenmoore     | spez. Angreifer                                  | Feuerfänger, Glutpanzer, Schwebend          |
+| #014 | Ferrox        | Metall / Wild      | Schmiedeberge     | Tank, Raumverzerrung, Unterstützer               | Trotzkraft, Dickhaut, Schalldämpfer         |
+| #015 | Astrahirsch   | Astral / Flora     | Sternenwälder     | Unterstützer, Mischangreifer                     | Sternenaura, Saftfresser, Wildwuchs         |
+| #016 | Umbrax        | Schatten / Wyrm    | Schattenmoore     | Mischangreifer, phys. Angreifer                  | Hoheit, Urkraft, Pulsar                     |
+| #017 | Aschwolf      | Glut / Schatten    | Kaldera           | phys. Angreifer, Priorität                       | Reißzahn, Drohkulisse, Siegesrausch         |
+| #018 | Schmelzkröte  | Glut / Erde        | Kaldera           | Wetter, Raumverzerrung, Tank                     | Sonnenkind, Dickhaut, Glutpanzer            |
+| #019 | Funkenfalter  | Glut / Schwarm     | Kaldera           | spez. Angreifer, Wetter, Verstärker              | Sonnenkind, Feuerfänger, Häutung            |
+| #020 | Solarix ★     | Glut / Astral      | Kaldera           | spez. Angreifer, Wetter                          | Sonnenkind, Urkraft                         |
+| #021 | Riffhai       | Flut / Schatten    | Perlküste         | phys. Angreifer                                  | Reißzahn, Wellenreiter, Siegesrausch        |
+| #022 | Perlenhüter   | Flut / Kristall    | Perlküste         | Tank, Unterstützer, Raumverzerrung               | Dickhaut, Unbeugsam, Wasserschlucker        |
+| #023 | Abyssax       | Flut / Wyrm        | Perlküste         | Mischangreifer, Wetter                           | Tiefenzorn, Urkraft, Regenbringer           |
+| #024 | Nebelqualle   | Flut / Spuk        | Schattenmoore     | Unterstützer                                     | Wasserschlucker, Schwebend, Häutung         |
+| #025 | Teichling     | Flut / Flora       | Sternenwälder     | Wetter, Unterstützer, spez. Angreifer            | Regenbringer, Wellenreiter, Saftfresser     |
+| #026 | Dornfaust     | Flora / Faust      | Gipfelklöster     | phys. Angreifer, Tank                            | Rauhaut, Schlagkraft, Wildwuchs             |
+| #027 | Pilzling      | Flora / Gift       | Schattenmoore     | Unterstützer, Umlenker                           | Häutung, Giftdorn, Beerenbann               |
+| #028 | Schlingwurz   | Flora / Spuk       | Schattenmoore     | Mischangreifer, Unterstützer                     | Wildwuchs, Saftfresser, Häutung             |
+| #029 | Blütenschwirr | Flora / Wind       | Sternenwälder     | spez. Angreifer, Initiative-Kontrolle            | Blütenaura, Saftfresser, Lichtsprinter      |
+| #030 | Dünenwurm     | Erde / Wyrm        | Sonnenwüste       | phys. Angreifer, Wetter                          | Staubwirbler, Sandläufer, Reißzahn          |
+| #031 | Tonhüter      | Erde / Psi         | Sonnenwüste       | Raumverzerrung, Tank, Mischangreifer             | Psiaura, Unbeugsam, Dickhaut                |
+| #032 | Blitzmarder   | Funke / Wild       | Gipfelklöster     | phys. Angreifer, Priorität                       | Statikfell, Blitzfänger, Wucht              |
+| #033 | Voltaal       | Funke / Flut       | Perlküste         | spez. Angreifer                                  | Blitzfänger, Wasserschlucker, Statikfell    |
+| #034 | Spulwerk      | Funke / Metall     | Schmiedeberge     | Unterstützer, Tank                               | Funkenaura, Eisern, Rückstoßfrei            |
+| #035 | Fulgurax ★    | Funke / Wyrm       | Gipfelklöster     | Mischangreifer                                   | Funkenaura, Urkraft                         |
+| #036 | Quarzigel     | Kristall / Funke   | Kristallhöhlen    | Unterstützer, Initiative-Kontrolle               | Rauhaut, Statikfell, Unbeugsam              |
+| #037 | Firnmammut    | Frost / Erde       | Gletscherhochland | Wetter, phys. Angreifer, Tank                    | Frostatem, Dickhaut, Schneeläufer           |
+| #038 | Firnhase      | Frost / Wild       | Gletscherhochland | phys. Angreifer, Priorität                       | Schneeläufer, Wucht, Wachsam                |
+| #039 | Raureifel     | Frost / Astral     | Gletscherhochland | Unterstützer                                     | Frostatem, Schutzgeist, Wachsam             |
+| #040 | Packeiswal    | Frost / Flut       | Gletscherhochland | Tank, Mischangreifer                             | Frostatem, Dickhaut, Wasserschlucker        |
+| #041 | Firnseele     | Frost / Spuk       | Gletscherhochland | spez. Angreifer                                  | Schwebend, Schneeläufer, Wachsam            |
+| #042 | Mantira       | Psi / Schwarm      | Gipfelklöster     | phys. Angreifer, Mischangreifer                  | Scharfsinn, Hoheit, Trotzreaktion           |
+| #043 | Klosteraffe   | Psi / Faust        | Gipfelklöster     | Unterstützer, Mischangreifer                     | Schutzgeist, Psiaura, Schlagkraft           |
+| #044 | Speculix      | Psi / Metall       | Sonnenwüste       | Raumverzerrung, Unterstützer                     | Eisern, Unbeugsam, Schwebend                |
+| #045 | Steppenboxer  | Faust / Wild       | Sternenwälder     | phys. Angreifer, Priorität                       | Schlagkraft, Trotzreaktion, Wucht           |
+| #046 | Nachtkralle   | Schatten / Faust   | Schattenmoore     | phys. Angreifer, Priorität                       | Scharfsinn, Wucht, Siegesrausch             |
+| #047 | Klingenfalke  | Metall / Wind      | Schmiedeberge     | phys. Angreifer, Initiative-Kontrolle, Priorität | Scharfsinn, Eisern, Unbeugsam               |
+| #048 | Rüstgeist     | Metall / Spuk      | Schmiedeberge     | Tank, Raumverzerrung, phys. Angreifer            | Eisern, Rauhaut, Trotzkraft                 |
+| #049 | Schmiedekäfer | Metall / Schwarm   | Schmiedeberge     | phys. Angreifer, Tank                            | Kettenläufer, Trotzkraft, Eisern            |
+| #050 | Moormolch     | Gift / Flut        | Schattenmoore     | Mischangreifer, Unterstützer                     | Giftdorn, Wellenreiter, Häutung             |
+| #051 | Stachelwespe  | Gift / Schwarm     | Schattenmoore     | phys. Angreifer                                  | Scharfsinn, Giftdorn, Siegesrausch          |
+| #052 | Dünenskorpion | Gift / Erde        | Sonnenwüste       | phys. Angreifer, Tank                            | Giftdorn, Sandläufer, Rauhaut               |
+| #053 | Moorflatterer | Schatten / Wind    | Schattenmoore     | Unterstützer, Initiative-Kontrolle               | Schalldämpfer, Beerenbann, Wachsam          |
+| #054 | Mondfuchs     | Astral / Wild      | Sternenwälder     | Unterstützer, Umlenker, spez. Angreifer          | Sternenaura, Schutzgeist, Wachsam           |
+| #055 | Astrolabix    | Astral / Metall    | Sonnenwüste       | Unterstützer, Tank, Raumverzerrung               | Sternenaura, Eisern, Unbeugsam              |
+| #056 | Hügelbauer    | Schwarm / Erde     | Sonnenwüste       | Tank, Raumverzerrung, Wetter                     | Staubwirbler, Kettenläufer, Dickhaut        |
+| #057 | Terrax ★      | Flora / Kristall   | Kristallhöhlen    | Tank, Unterstützer                               | Blütenaura, Dickhaut                        |
+| #058 | Granitringer  | Kristall / Faust   | Kristallhöhlen    | phys. Angreifer, Tank                            | Trotzkraft, Schlagkraft, Unbeugsam          |
+| #059 | Gruftkatze    | Spuk / Wild        | Schattenmoore     | phys. Angreifer, Unterstützer                    | Scharfsinn, Wachsam, Beerenbann             |
+| #060 | Wolkenschaf   | Wind / Astral      | Gipfelklöster     | Unterstützer, Wetter                             | Regenbringer, Schutzgeist, Wachsam          |
+
+### Legenden
+
+Drei Wesen gelten als älter als die Arenen selbst:
+
+- **Solarix** (Glut / Astral) – der Sonnenvogel, der die erste Sonne über Valmaren entzündet haben soll.
+  Alle hundert Jahre verbrennt er und steigt aus der Asche neu empor.
+- **Fulgurax** (Funke / Wyrm) – der Blitzwyrm; sein Brüllen ist der Donner über den Gipfelklöstern.
+- **Terrax** (Flora / Kristall) – eine Schildkröte, auf deren Panzer ein Kristallberg mit einem uralten
+  Wald steht. Wenn sie erwacht, wandern Gebirge.
+
+### Aussehen und Stil
+
+Jede Essenz hat eine erkennbare Bildsprache: Glut-Monster tragen warme Rot- und Orangetöne und glühende
+Teile, Flut-Monster Blau mit Schaumkronen, Spuk-Monster halbtransparente Schleier, Kristall-Monster
+facettierte, glänzende Flächen, Astral-Monster Sterne und Mondsicheln. Die Sprites entstehen per Code
+(`src/sprites/monsters/`), jedes Monster hat eine eigene, als Schattenriss erkennbare Silhouette.
 
 ## Zustände, Wetter und Felder
 
