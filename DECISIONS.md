@@ -342,3 +342,68 @@ Galerie und Engine-Test ließen sich auf dem iPad nicht per Touch scrollen. Ursa
 Grid mit `place-items: center` und hatte `height: 100%`; das Mausrad funktionierte, Touch-Scrollen nicht
 (in Chromium mit echten Touch-Ereignissen nachgestellt). Alle scrollbaren Bildschirme sind jetzt Flex-Spalten
 mit `min-height: 0`; der Browser-Test wischt per Touch-Ereignissen und prüft die Scrollposition.
+
+### D-047 · KI „Normal“ und öffentliche Sicht
+
+Die KI bekommt über `AgentContext.view()` nur, was ein Spieler sieht (`src/ai/view.ts`): das eigene Team
+vollständig, Gegner erst nach dem Erscheinen und nur Spezies, Essenzen, LP in ganzen Prozent, Status, Stufen.
+„Normal“ schätzt die gegnerischen Werte aus den Basiswerten (IV 31, mittlere Investition), rechnet für jede
+Attacke und jedes Ziel den erwarteten Schaden (Essenzen, Gleicher-Typ-Bonus, Wetter, Brand, Genauigkeit,
+Mehrfachtreffer), bevorzugt K.O.s, meidet Treffer am Partner und bewertet Statusattacken mit Faustregeln
+(Wetter/Feld nur wenn nützlich, Schutzwände, Heilung unter 50 %, Status nur bei Wirkung). Wechselt bei klar
+schlechtem Matchup. Ergebnis: gewinnt rund 90 % gegen „Leicht“ (Test: > 75 %).
+
+### D-048 · Kampf-Bildschirm in drei Schichten
+
+1. `BattleController` (ohne DOM, in Node getestet): erzeugt den Kampf, lässt die KI entscheiden, sobald sie
+   gefragt ist, und liefert neue Ereignisse.
+2. `BattleSession` (Svelte-Runes): spielt die Ereignisse nacheinander ab – Textbox, LP-Balken, Animation –
+   und fragt dann den Spieler. Das Sichtmodell (`viewModel.ts`) wird Ereignis für Ereignis fortgeschrieben
+   und an jedem Entscheidungspunkt mit dem Engine-Zustand abgeglichen.
+3. Komponenten (Szene, Infofelder, Befehle, Vorschau, Log, Ergebnis) lesen nur Session und Sichtmodell.
+
+Gegner-Infos folgen D-047: Gegner erscheinen erst beim Einwechseln, LP in Prozent, keine Items/Attacken.
+
+### D-049 · 2D-Kampffeld bis zur HD-2D-Szene
+
+Phase 4 zeigt den Kampf mit CSS: vier Arenen (Wald, Kristallhöhle, Wüste, Stadion) aus Verläufen, Plätze in
+Prozent der Arena (eigene Monster vorn links von hinten, Gegner hinten rechts von vorn), Sprites ganzzahlig
+skaliert (Gegner ×2–4, eigene eine Stufe größer). Die 11 Animationsvorlagen der Attacken (Geschoss, Strahl,
+Explosion, Aura, Welle, Nahkampf, Mehrfach, Werte hoch/runter, Heilung, Feld) sind CSS-Animationen in der
+Farbe der Attacke; Wetter und Felder sind Überlagerungen. Phase 6 ersetzt die Szene, Session und Plätze bleiben.
+
+### D-050 · Befehlseingabe
+
+Pro aktiver Position nacheinander: Attacke (2×2-Raster in Essenz-Farbe, AP, Kategorie) oder Wechseln;
+„Zurück“ geht zur vorigen Position. Ein Ziel wird nur abgefragt, wenn es eine echte Wahl gibt – per Button
+oder Antippen des Monsters in der Arena. Effektivitäts-Hinweise (×0 … ×4 je Gegner) rechnen nur mit den
+sichtbaren Essenzen (keine Fähigkeiten), abschaltbar. Details: Maus-Hover, Tastaturfokus oder Lang-Drücken
+(Touch, wählt die Attacke nicht). Tastatur: 1–9 wählt die n-te Option, Esc = zurück, Pfeiltasten navigieren
+räumlich (`spatialNav.ts`). Aufgeben mit Rückfrage.
+
+### D-051 · Texte aus Spielersicht und Tempo
+
+Der Kampflog erzählt aus Sicht des Spielers („Los, Pyrrax!“, „Der Gegner schickt … in den Kampf!“, gegnerische
+Monster als „Name (Gegner)“). Textgeschwindigkeit in vier Stufen (Langsam/Normal/Schnell/Sofort), Antippen der
+Textbox überspringt, „Vorspulen“ läuft bis zur nächsten Entscheidung. Kampf-Einstellungen (Tempo,
+Effektivitäts-Hinweise, Log offen) liegen bis zum Einstellungs-Bildschirm (Phase 5) im Kampf selbst und
+werden in localStorage gespeichert.
+
+### D-052 · Kampflog als Spalte
+
+Das Log ist eine eigene Spalte rechts neben der Arena (26 % der Breite, 240–340 px), kein Overlay: Auf
+1024 px Breite verdeckte die Schublade sonst einen Gegner und die eigenen Infofelder. Die Arena rechnet Plätze
+und Sprite-Größen aus ihrer tatsächlichen Größe.
+
+### D-053 · Zufallsteams, Revanche, Replay-Export
+
+Bis zum Teambuilder (Phase 5) spielt man mit einem Zufallsteam (neu würfelbar); der Gegner bekommt jedes Mal
+ein neues. Revanche = dieselben Teams und dieselbe Arena mit neuem Seed. „Replay kopieren“ legt die
+`ReplayData` (Seed + Eingaben) als JSON in die Zwischenablage; die Replay-Ansicht folgt in Phase 7.
+
+### D-054 · Reaktive Proxys nicht an die Engine geben
+
+Svelte-5-`$state` liefert Proxys; die Engine klont Entscheidungen mit `structuredClone`, das an Proxys
+scheitert (im Node-Test unsichtbar, weil Svelte dort ohne Proxys kompiliert). `BattleSession.submit`
+übergibt deshalb `$state.snapshot(choice)`. Vor jedem Deploy spielt ein Playwright-Durchlauf ganze Kämpfe
+per Klick, Tastatur und Touch (1024×768, 1920×1080, iPad).
