@@ -1,10 +1,16 @@
 {
-  // Headless-Teile (Engine, Daten, KI, Teams) müssen ohne DOM und ohne Node-Typen kompilieren.
+  // Headless-Teile (Engine, Daten, KI, Teams, Sprite-Generator) müssen ohne DOM und ohne Node-Typen kompilieren.
   // So laufen sie identisch im Browser, im Headless-Simulator und später auf dem Online-Server.
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "lib": ["ES2023"],
     "types": []
   },
-  "include": ["src/engine/**/*.ts", "src/data/**/*.ts", "src/ai/**/*.ts", "src/teams/**/*.ts"]
+  "include": [
+    "src/engine/**/*.ts",
+    "src/data/**/*.ts",
+    "src/ai/**/*.ts",
+    "src/teams/**/*.ts",
+    "src/sprites/**/*.ts"
+  ]
 }

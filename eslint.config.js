@@ -106,6 +106,33 @@ export default defineConfig(
   },
 
   {
+    // Der Sprite-Generator ist reine Rechnung: kein DOM, kein Three.js, deterministisch.
+    files: ['src/sprites/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            { group: ['three', 'three/*'], message: 'Sprites erzeugen nur Pixeldaten.' },
+            {
+              group: ['svelte', 'svelte/*', '*.svelte', '**/ui/**', '**/render/**'],
+              message: 'Sprites dürfen nicht von Oberfläche oder Szene abhängen.',
+            },
+          ],
+        },
+      ],
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'Math',
+          property: 'random',
+          message: 'Sprites müssen bei jedem Start gleich aussehen.',
+        },
+      ],
+    },
+  },
+
+  {
     // Node-Kontext: Tests, Skripte, Konfiguration.
     files: ['tests/**', 'scripts/**', '*.config.js', '*.config.ts'],
     languageOptions: { globals: { ...globals.node } },
