@@ -6,10 +6,19 @@
     /** Wird laufend mit Bildrate und GPU-Name aktualisiert; `null`, falls WebGL fehlt. */
     stats?: SceneStats | null;
     failed?: boolean;
+    /** Szene anhalten (z. B. hinter rechenintensiven Bildschirmen); das letzte Bild bleibt stehen. */
+    paused?: boolean;
   }
 
-  let { stats = $bindable(null), failed = $bindable(false) }: Props = $props();
+  let { stats = $bindable(null), failed = $bindable(false), paused = false }: Props = $props();
   let host: HTMLDivElement;
+  let scene = $state<{ start: () => void; stop: () => void } | null>(null);
+
+  $effect(() => {
+    if (!scene) return;
+    if (paused) scene.stop();
+    else scene.start();
+  });
 
   onMount(() => {
     let disposed = false;
@@ -18,12 +27,12 @@
     void import('../../render/previewScene.ts')
       .then(({ PreviewScene }) => {
         if (disposed) return;
-        const scene = new PreviewScene(host, (next) => {
+        const preview = new PreviewScene(host, (next) => {
           stats = next;
         });
-        scene.start();
+        scene = preview;
         dispose = () => {
-          scene.dispose();
+          preview.dispose();
         };
       })
       .catch((error: unknown) => {

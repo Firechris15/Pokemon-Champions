@@ -6,10 +6,11 @@
   import UpdateToast from './components/UpdateToast.svelte';
   import DevMenu from './screens/DevMenu.svelte';
   import EngineTestScreen from './screens/EngineTestScreen.svelte';
+  import GalleryScreen from './screens/GalleryScreen.svelte';
   import SystemScreen from './screens/SystemScreen.svelte';
   import TitleScreen from './screens/TitleScreen.svelte';
 
-  type Screen = 'title' | 'menu' | 'system' | 'engine';
+  type Screen = 'title' | 'menu' | 'system' | 'engine' | 'gallery';
 
   let screen = $state<Screen>('title');
   let stats = $state<SceneStats | null>(null);
@@ -17,7 +18,7 @@
 </script>
 
 <main>
-  <SceneCanvas bind:stats bind:failed={webglFailed} />
+  <SceneCanvas bind:stats bind:failed={webglFailed} paused={screen === 'gallery'} />
 
   {#key screen}
     <div class="layer" in:fade={{ duration: 260 }} out:fade={{ duration: 160 }}>
@@ -40,6 +41,12 @@
         <SystemScreen
           {stats}
           {webglFailed}
+          onBack={() => {
+            screen = 'menu';
+          }}
+        />
+      {:else if screen === 'gallery'}
+        <GalleryScreen
           onBack={() => {
             screen = 'menu';
           }}

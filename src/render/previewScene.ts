@@ -1,8 +1,12 @@
 import * as THREE from 'three';
+import { MONSTER_SPRITES } from '../sprites/monsters/index.ts';
+import { FRAME_MARGIN, FRAME_SIZE } from '../sprites/raster.ts';
+import { IDLE_FRAMES, spriteSheet } from '../sprites/sheet.ts';
+import { setSheetFrame, sheetTexture } from './spriteTexture.ts';
 
 /**
- * Kleine HD-2D-Vorschauszene für Titelbildschirm und Systemcheck (Phase 0).
- * Prüft auf dem Zielgerät: WebGL, Pixel-Texturen (NearestFilter), Billboard-Sprites,
+ * Kleine HD-2D-Vorschauszene für Titelbildschirm und Systemcheck.
+ * Prüft auf dem Zielgerät: WebGL, Pixel-Texturen (NearestFilter), Billboard-Sprites (echte Monster),
  * Licht, Nebel, Partikel und die erreichte Bildrate. Die echte Kampfszene folgt in Phase 6.
  */
 
@@ -119,52 +123,6 @@ function treelineTexture(color: string, seed: number): THREE.DataTexture {
   return texture;
 }
 
-interface PlaceholderLook {
-  body: readonly [string, string, string, string];
-  outline: string;
-  eye: string;
-  ears: boolean;
-}
-
-/**
- * Platzhalter-Monster (Blob mit Outline, 3 Schattentönen und Lichtkante).
- * Die echten prozeduralen Sprites entstehen in Phase 3 in /src/sprites.
- */
-function placeholderSprite(look: PlaceholderLook, facing: 'front' | 'back'): THREE.DataTexture {
-  const size = 24;
-  const [highlight, light, mid, dark] = look.body.map(hex) as [Rgb, Rgb, Rgb, Rgb];
-  const outline = hex(look.outline);
-  const eye = hex(look.eye);
-  const inside = (x: number, y: number): boolean => {
-    const dx = (x + 0.5 - 12) / 8.5;
-    const dy = (y + 0.5 - 15) / 7.5;
-    if (dx * dx + dy * dy <= 1) return true;
-    if (!look.ears) return false;
-    // Zwei spitze Ohren.
-    for (const cx of [8.5, 15.5]) {
-      const ex = Math.abs(x + 0.5 - cx);
-      if (y >= 4 && y < 12 && ex <= (y - 4) * 0.4 + 0.6) return true;
-    }
-    return false;
-  };
-  return pixelTexture(size, size, (x, y) => {
-    if (!inside(x, y)) {
-      const edge = inside(x - 1, y) || inside(x + 1, y) || inside(x, y - 1) || inside(x, y + 1);
-      return edge ? outline : null;
-    }
-    if (facing === 'front' && y === 13 && (x === 9 || x === 15)) return eye;
-    if (facing === 'front' && y === 12 && (x === 9 || x === 15)) return hex('#ffffff');
-    // Licht von links oben: einfache Normalen-Schattierung des Ellipsoids.
-    const nx = (x + 0.5 - 12) / 8.5;
-    const ny = (y + 0.5 - 15) / 7.5;
-    const shade = -nx * 0.55 - ny * 0.75;
-    if (shade > 0.75) return highlight;
-    if (shade > 0.1) return light;
-    if (shade > -0.55) return mid;
-    return dark;
-  });
-}
-
 function blobShadowTexture(): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 64;
@@ -181,7 +139,8 @@ function blobShadowTexture(): THREE.CanvasTexture {
 
 interface Actor {
   sprite: THREE.Sprite;
-  baseY: number;
+  view: 'front' | 'back';
+  texture: THREE.Texture | null;
   phase: number;
 }
 
@@ -390,38 +349,45 @@ export class PreviewScene {
     });
 
     // Doppelkampf-Aufstellung: eigene Seite vorne (Rückenansicht), Gegner hinten (Frontansicht).
-    const looks: PlaceholderLook[] = [
-      {
-        body: ['#fff1c2', '#ffc15e', '#e8823a', '#a34b2a'],
-        outline: '#2a1208',
-        eye: '#2a1208',
-        ears: true,
-      },
-      {
-        body: ['#d8fff6', '#7fe0d0', '#3ea7a0', '#24626a'],
-        outline: '#0b2128',
-        eye: '#0b2128',
-        ears: false,
-      },
+    const slots: { x: number; z: number; facing: 'front' | 'back'; size: number }[] = [
+      { x: -1.9, z: 2.2, facing: 'back', size: 3.6 },
+      { x: 1.9, z: 2.2, facing: 'back', size: 3.6 },
+      { x: -1.6, z: -2.4, facing: 'front', size: 3.2 },
+      { x: 1.6, z: -2.4, facing: 'front', size: 3.2 },
     ];
-    const slots: { x: number; z: number; facing: 'front' | 'back'; look: number; size: number }[] =
-      [
-        { x: -1.9, z: 2.2, facing: 'back', look: 1, size: 2.3 },
-        { x: 1.9, z: 2.2, facing: 'back', look: 0, size: 2.3 },
-        { x: -1.6, z: -2.4, facing: 'front', look: 0, size: 2 },
-        { x: 1.6, z: -2.4, facing: 'front', look: 1, size: 2 },
-      ];
+    // Bei jedem Start andere Monster (nur Darstellung, kein Einfluss auf Kämpfe).
+    const ids = Object.keys(MONSTER_SPRITES)
+      .map((id) => ({ id, order: Math.random() }))
+      .sort((a, b) => a.order - b.order)
+      .slice(0, slots.length)
+      .map((entry) => entry.id);
     slots.forEach((slot, index) => {
-      const look = looks[slot.look];
-      if (!look) return;
       const sprite = new THREE.Sprite(
-        new THREE.SpriteMaterial({ map: placeholderSprite(look, slot.facing), color: 0xffe6d0 }),
+        new THREE.SpriteMaterial({ color: 0xffe6d0, transparent: true, opacity: 0 }),
       );
-      sprite.center.set(0.5, 0);
+      // Füße stehen etwa 2 Einheiten über dem unteren Rand des Entwurfsrasters.
+      sprite.center.set(0.5, (FRAME_MARGIN + 2) / FRAME_SIZE);
       sprite.scale.set(slot.size, slot.size, 1);
       sprite.position.set(slot.x, 0.35, slot.z);
       scene.add(sprite);
-      this.actors.push({ sprite, baseY: 0.35, phase: index * 0.9 });
+      const actor: Actor = { sprite, view: slot.facing, texture: null, phase: index * 0.9 };
+      this.actors.push(actor);
+      // Sprites nacheinander erzeugen, damit der erste Frame nicht wartet.
+      const id = ids[index];
+      const def = id === undefined ? undefined : MONSTER_SPRITES[id];
+      if (id !== undefined && def) {
+        setTimeout(
+          () => {
+            const texture = sheetTexture(spriteSheet(id, def));
+            setSheetFrame(texture, slot.facing, 0);
+            sprite.material.map = texture;
+            sprite.material.opacity = 1;
+            sprite.material.needsUpdate = true;
+            actor.texture = texture;
+          },
+          60 * (index + 1),
+        );
+      }
 
       const shadow = new THREE.Mesh(
         new THREE.CircleGeometry(slot.size * 0.36, 16),
@@ -467,7 +433,10 @@ export class PreviewScene {
     this.camera.lookAt(this.cameraTarget);
 
     for (const actor of this.actors) {
-      actor.sprite.position.y = actor.baseY + Math.abs(Math.sin(time * 1.6 + actor.phase)) * 0.12;
+      if (actor.texture) {
+        const column = Math.floor(time * 4.2 + actor.phase * 3) % IDLE_FRAMES;
+        setSheetFrame(actor.texture, actor.view, column);
+      }
     }
     for (const torch of this.torches) {
       const flicker =

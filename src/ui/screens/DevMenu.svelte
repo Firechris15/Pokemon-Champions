@@ -3,13 +3,18 @@
   import type { MessageKey } from '../../i18n/types.ts';
 
   interface Props {
-    onOpen: (screen: 'system' | 'engine') => void;
+    onOpen: (screen: 'system' | 'engine' | 'gallery') => void;
     onBack: () => void;
   }
 
   const { onOpen, onBack }: Props = $props();
 
-  const entries: { screen: 'system' | 'engine'; label: MessageKey; hint: MessageKey }[] = [
+  const entries: {
+    screen: 'system' | 'engine' | 'gallery';
+    label: MessageKey;
+    hint: MessageKey;
+  }[] = [
+    { screen: 'gallery', label: 'menu.gallery', hint: 'menu.galleryHint' },
     { screen: 'engine', label: 'menu.engineTest', hint: 'menu.engineTestHint' },
     { screen: 'system', label: 'menu.systemCheck', hint: 'menu.systemCheckHint' },
   ];
