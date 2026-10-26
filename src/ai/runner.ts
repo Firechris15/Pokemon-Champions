@@ -5,6 +5,7 @@ import type { MonsterSet, SideIndex } from '../engine/model.ts';
 import { Rng } from '../engine/rng.ts';
 import { randomTeam } from '../teams/random.ts';
 import type { Agent, AgentContext } from './agent.ts';
+import { publicView } from './view.ts';
 
 /** Obergrenze an Entscheidungsrunden – erkennt Endlosschleifen in der Engine. */
 export const MAX_DECISION_STEPS = 5000;
@@ -47,6 +48,7 @@ export function runHeadlessBattle(options: HeadlessBattleOptions): HeadlessResul
     dex,
     rng: Rng.fromSeed(`${seed}:ai${side}`),
     validTargets: (position, target) => battle.validTargets(side as SideIndex, position, target),
+    view: () => publicView(battle, side as SideIndex),
   })) as [AgentContext, AgentContext];
 
   for (let step = 0; !battle.ended; step++) {

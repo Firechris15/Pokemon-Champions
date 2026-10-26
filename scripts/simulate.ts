@@ -1,9 +1,9 @@
 /**
- * Headless-Simulator: `npm run simulate -- --battles 1000 --format doubles-standard`
+ * Headless-Simulator: `npm run simulate -- --battles 1000 --format doubles-standard --agents easy,normal`
  * Lässt KI gegen KI kämpfen und gibt Balancing-Statistiken aus. Exit-Code 1 bei Fehlern.
  */
 import { parseArgs } from 'node:util';
-import { easyAgent } from '../src/ai/easy.ts';
+import { AGENTS, isAgentId } from '../src/ai/agents.ts';
 import { simulateMany } from '../src/ai/simulate.ts';
 import { STANDARD_DEX } from '../src/data/index.ts';
 
@@ -13,17 +13,23 @@ const { values } = parseArgs({
     format: { type: 'string', default: 'doubles-standard' },
     seed: { type: 'string', default: 'sim' },
     json: { type: 'boolean', default: false },
+    agents: { type: 'string', default: 'easy,easy' },
   },
 });
 
 const battles = Number.parseInt(values.battles, 10);
+const [idA = 'easy', idB = idA] = values.agents.split(',');
+if (!isAgentId(idA) || !isAgentId(idB)) {
+  console.error(`Unbekannte KI: ${values.agents} (verfügbar: ${Object.keys(AGENTS).join(', ')})`);
+  process.exit(2);
+}
 const started = performance.now();
 const report = simulateMany({
   dex: STANDARD_DEX,
   formatId: values.format,
   battles,
   seedPrefix: values.seed,
-  agents: [easyAgent, easyAgent],
+  agents: [AGENTS[idA], AGENTS[idB]],
 });
 const seconds = (performance.now() - started) / 1000;
 
@@ -32,7 +38,7 @@ if (values.json) {
 } else {
   const pct = (n: number, d: number) => (d > 0 ? `${((100 * n) / d).toFixed(1)} %` : '–');
   console.log(
-    `\n${report.battles}/${battles} Kämpfe (${values.format}) in ${seconds.toFixed(1)} s`,
+    `\n${report.battles}/${battles} Kämpfe (${values.format}, ${idA} gegen ${idB}) in ${seconds.toFixed(1)} s`,
   );
   console.log(
     `Siege: Seite A ${report.wins[0]} · Seite B ${report.wins[1]} · Unentschieden ${report.ties}`,
